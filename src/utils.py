@@ -1,14 +1,29 @@
 from math import log, floor
 
 
-# Result of addition in register p2
+# Negates number which is in register 0 (p0)
+# Registers used: 0-1
+def negate_number() -> str:
+    return f'STORE 1\n' + f'SUB 0\nSUB 1'
+
+
+# Result of addition in register p0
 # Registers used: 2(itself) and 0-1(sub calls)
 def add_constants(x: int, y: int) -> str:
+    # Numbers do not have the same sign
+    if x >= 0 and y <= 0:
+        return generate_number(y, 2) + generate_number(x) + 'SUB 2'
+    elif x <= 0 and y >= 0:
+        return generate_number(x, 2) + generate_number(y) + 'SUB 2'
+
+    # Numbers have the same sign
     result: str = generate_number(x, 2) + generate_number(y) + 'ADD 2'
+    if x < 0 and y < 0:
+        result = result + negate_number()
     return result
 
 
-# Registers 0-3
+# Registers used: 0-3
 def multiply_constants(x: int, y: int) -> str:
     # multiplication by 0
     if x == 0 or y == 0:
@@ -42,8 +57,7 @@ def multiply_constants(x: int, y: int) -> str:
 
     # negate if number is negative
     if result_is_negative:
-        result = result + f'STORE {x_register}\n' \
-                 + f'SUB 0\nSUB {x_register}'
+        result = result + negate_number()
 
     return result
 
