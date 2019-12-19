@@ -8,9 +8,10 @@ class CompilerLexer(Lexer):
               FOR, FROM, TO, DOWNTO,
               READ, WRITE,
               IF, THEN, ELSE, ENDIF,
-              IDENTIFIER, NUMBER}
+              IDENTIFIER, NUMBER,
+              DECLARE, BEGIN, END}
 
-    literals = {'(', ')'}
+    literals = {'(', ')', ';', ',', ':'}
 
     ignore = r' \t'
     ignore_comment = r'\[[^\]]*\]'
@@ -38,6 +39,9 @@ class CompilerLexer(Lexer):
     THEN = r'THEN'
     ELSE = r'ELSE'
     ENDIF = r'ENDIF'
+    DECLARE = r'DECLARE'
+    BEGIN = r'BEGIN'
+    END = r'END'
 
     @_(r'\d+')
     def NUMBER(self, t):
@@ -57,10 +61,10 @@ if __name__ == '__main__':
     data = '''
 [ Counting 
 lkkjkhk]
-x ASSIGN 0 GG
+x ASSIGN 0; GG
 FOR 1 TO 10
-    WRITE x
-    x ASSIGN x PLUS 1
+    WRITE x;
+    x ASSIGN x PLUS 1;
 
 '''
     lexer = CompilerLexer()
