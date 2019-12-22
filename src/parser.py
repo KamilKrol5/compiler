@@ -1,5 +1,6 @@
 from sly import Parser
 from lexer import CompilerLexer
+from structures.AST import *
 
 
 class CompilerParser(Parser):
@@ -8,71 +9,73 @@ class CompilerParser(Parser):
 
     @_('DECLARE declarations BEGIN commands END')
     def program(self, p):
-        pass
+        return Program(declarations=p.declarations, commands=p.commands)
 
     @_('BEGIN commands END')
     def program(self, p):
-        pass
+        return Program(declarations=Declarations(List()), commands=p.commands)
 
     @_('declarations "," IDENTIFIER')
     def declarations(self, p):
-        pass
+        return p.declarations.add_declaration(NumberDeclaration(p.IDENTIFIER))
 
     @_('declarations "," IDENTIFIER "(" NUMBER ":" NUMBER ")"')
     def declarations(self, p):
-        pass
+        p.declarations.add_declaration(ArrayDeclaration(p.IDENTIFIER, begin_index=p.NUMBER0, end_index=p.NUMBER1))
 
     @_('IDENTIFIER')
     def declarations(self, p):
-        pass
+        return Declarations(declarations=[NumberDeclaration(p.IDENTIFIER)])
 
     @_('IDENTIFIER "(" NUMBER ":" NUMBER ")"')
     def declarations(self, p):
-        pass
+        return Declarations(declarations=[ArrayDeclaration(p.IDENTIFIER, begin_index=p.NUMBER0, end_index=p.NUMBER1)])
 
     @_('commands command')
     def commands(self, p):
-        pass
+        return p.commands.add_command(p.command)
 
     @_('command')
     def commands(self, p):
-        pass
+        return Commands([p.command])
 
     @_('identifier ASSIGN expression ";"')
     def command(self, p):
-        pass
+        return AssignmentCommand(p.identifier, p.expression)
 
     @_('IF condition THEN commands ELSE commands ENDIF')
     def command(self, p):
-        pass
+        return IfThenElseCommand(p.condition, p.commands0, p.commands1)
 
     @_('IF condition THEN commands ENDIF')
     def command(self, p):
-        pass
+        return IfThenCommand(p.condition, p.commands)
 
     @_('WHILE condition DO commands ENDWHILE')
     def command(self, p):
-        pass
+        return WhileDoCommand(p.condition, p.commands)
 
     @_('DO commands WHILE condition ENDDO')
     def command(self, p):
-        pass
+        return DoWhileCommand(p.condition, p.commands)
 
     @_('FOR IDENTIFIER FROM value TO value DO commands ENDFOR')
     def command(self, p):
-        pass
+        return ForCommand(iterator_identifier=p.IDENTIFIER, start=p.value0,
+                          end=p.value1, is_down_to=False, commands=p.commands)
 
     @_('FOR IDENTIFIER FROM value DOWNTO value DO commands ENDFOR')
     def command(self, p):
-        pass
+        return ForCommand(iterator_identifier=p.IDENTIFIER, start=p.value0,
+                          end=p.value1, is_down_to=True, commands=p.commands)
 
     @_('READ identifier ";"')
     def command(self, p):
-        pass
+        return ReadCommand(p.identifier)
 
     @_('WRITE value ";"')
     def command(self, p):
-        pass
+        return WriteCommand(p.value)
 
     @_('value')
     def expression(self, p):
