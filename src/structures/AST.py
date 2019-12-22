@@ -57,7 +57,7 @@ class Declarations:
     def __init__(self, declarations: List[Declaration]):
         self.declarations = declarations
 
-    def add_declaration(self, declaration: Declaration):
+    def add_declaration(self, declaration: Declaration) -> None:
         self.declarations.append(declaration)
 
 
@@ -96,7 +96,7 @@ class Commands:
     def __init__(self, commands: List[Command]):
         self.commands = commands
 
-    def add_command(self, command: Command):
+    def add_command(self, command: Command) -> None:
         self.commands.append(command)
 
 
