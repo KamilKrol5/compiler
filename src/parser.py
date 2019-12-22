@@ -79,71 +79,44 @@ class CompilerParser(Parser):
 
     @_('value')
     def expression(self, p):
-        pass
+        return ExpressionHavingOnlyOneValue(p.value)
 
-    @_('value PLUS value')
+    @_('value PLUS value',
+       'value MINUS value',
+       'value TIMES value',
+       'value DIV value',
+       'value MOD value')
     def expression(self, p):
-        pass
+        return ExpressionHavingTwoValues(value1=p.value0, value2=p.value1, operation=p[1])
 
-    @_('value MINUS value')
-    def expression(self, p):
-        pass
-
-    @_('value TIMES value')
-    def expression(self, p):
-        pass
-
-    @_('value DIV value')
-    def expression(self, p):
-        pass
-
-    @_('value MOD value')
-    def expression(self, p):
-        pass
-
-    @_('value EQ value')
+    @_('value EQ value',
+       'value NEQ value',
+       'value LE value',
+       'value GE value',
+       'value LEQ value',
+       'value GEQ value')
     def condition(self, p):
-        pass
-
-    @_('value NEQ value')
-    def condition(self, p):
-        pass
-
-    @_('value LE value')
-    def condition(self, p):
-        pass
-
-    @_('value GE value')
-    def condition(self, p):
-        pass
-
-    @_('value LEQ value')
-    def condition(self, p):
-        pass
-
-    @_('value GEQ value')
-    def condition(self, p):
-        pass
+        return TwoValueCondition(p.value0, p.value1, p[1])
 
     @_('NUMBER')
     def value(self, p):
-        pass
+        return IntNumberValue(int(p.NUMBER))
 
     @_('identifier')
     def value(self, p):
-        pass
+        return IdentifierValue(p.identifier)
 
     @_('IDENTIFIER')
     def identifier(self, p):
-        pass
+        return VariableIdentifier(p.IDENTIFIER)
 
     @_('IDENTIFIER "(" IDENTIFIER ")"')
     def identifier(self, p):
-        pass
+        return ArrayElementByVariableIdentifier(p.IDENTIFIER0, p.IDENTIFIER1)
 
     @_('IDENTIFIER "(" NUMBER ")"')
     def identifier(self, p):
-        pass
+        return ArrayElementByIntNumberIdentifier(p.IDENTIFIE, IntNumberValue(int(p.NUMBER)))
 
 
 if __name__ == '__main__':

@@ -2,9 +2,39 @@ from typing import List
 from abc import ABC
 
 
-class IntNumber:
+class Value(ABC):
+    pass
+
+
+class Identifier(ABC):
+    pass
+
+
+class IntNumberValue(Value):
     def __init__(self, value: int):
         self.value = value
+
+
+class IdentifierValue(Value):
+    def __init__(self, identifier: Identifier):
+        self.identifier = identifier
+
+
+class VariableIdentifier(Identifier):
+    def __init__(self, identifier_name: str):
+        self.identifier_name = identifier_name
+
+
+class ArrayElementByVariableIdentifier(Identifier):
+    def __init__(self, array_identifier: str, index_identifier: str):
+        self.array_identifier = array_identifier
+        self.index_identifier = index_identifier
+
+
+class ArrayElementByIntNumberIdentifier(Identifier):
+    def __init__(self, array_identifier: str, index_value: IntNumberValue):
+        self.array_identifier = array_identifier
+        self.index_identifier = index_value
 
 
 class Declaration(ABC):
@@ -17,7 +47,7 @@ class NumberDeclaration(Declaration):
 
 
 class ArrayDeclaration(Declaration):
-    def __init__(self, identifier: str, begin_index: IntNumber, end_index: IntNumber):
+    def __init__(self, identifier: str, begin_index: IntNumberValue, end_index: IntNumberValue):
         self.end_index = end_index
         self.begin_index = begin_index
         self.identifier = identifier
@@ -35,16 +65,31 @@ class Command(ABC):
     pass
 
 
-class Identifier(ABC):
-    pass
-
-
 class Expression(ABC):
     pass
 
 
 class Condition(ABC):
     pass
+
+
+class ExpressionHavingOnlyOneValue(Expression):
+    def __init__(self, value: Value):
+        self.value = value
+
+
+class ExpressionHavingTwoValues(Expression):
+    def __init__(self, value1: Value, value2: Value, operation: str):
+        self.operation = operation
+        self.valueLeft = value1
+        self.valueRight = value2
+
+
+class TwoValueCondition(Condition):
+    def __init__(self, value1: Value, value2: Value, compare_operation: str):
+        self.compare_operation = compare_operation
+        self.valueLeft = value1
+        self.valueRight = value2
 
 
 class Commands:
@@ -86,10 +131,6 @@ class DoWhileCommand(Command):
         self.condition = condition
 
 
-class Value(ABC):
-    pass
-
-
 class ForCommand(Command):
     def __init__(self, iterator_identifier: str, start: Value, end: Value, is_down_to: bool, commands: Commands):
         self.iterator_identifier = iterator_identifier
@@ -113,6 +154,7 @@ class Program:
     def __init__(self, declarations: Declarations, commands: Commands):
         self.commands = commands
         self.declarations = declarations
+
 # class TreeNode:
 #     def __init__(self, children: List['TreeNode'], parent: 'TreeNode', child_id=0):
 #         self.children: List['TreeNode'] = children
