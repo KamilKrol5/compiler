@@ -5,7 +5,8 @@ class CompilerLexer(Lexer):
     tokens = {PLUS, MINUS, TIMES, DIV, MOD,
               EQ, NEQ, LE, GE, LEQ, GEQ,
               ASSIGN,
-              FOR, FROM, TO, DOWNTO,
+              FOR, FROM, TO, DOWNTO, ENDFOR,
+              WHILE, DO, ENDWHILE, ENDDO,
               READ, WRITE,
               IF, THEN, ELSE, ENDIF,
               IDENTIFIER, NUMBER,
@@ -22,23 +23,28 @@ class CompilerLexer(Lexer):
     TIMES = r'TIMES'
     DIV = r'DIV'
     MOD = r'MOD'
-    EQ = r'EQ'
     NEQ = r'NEQ'
-    LE = r'LE'
-    GE = r'GE'
+    EQ = r'EQ'
     LEQ = r'LEQ'
+    LE = r'LE'
     GEQ = r'GEQ'
+    GE = r'GE'
     ASSIGN = r'ASSIGN'
+    ENDWHILE = r'ENDWHILE'
+    ENDFOR = r'ENDFOR'
     FOR = r'FOR'
     FROM = r'FROM'
-    TO = r'TO'
     DOWNTO = r'DOWNTO'
+    TO = r'TO'
+    WHILE = r'WHILE'
+    ENDDO = r'ENDDO'
+    DO = r'DO'
     READ = r'READ'
     WRITE = r'WRITE'
+    ENDIF = r'ENDIF'
     IF = r'IF'
     THEN = r'THEN'
     ELSE = r'ELSE'
-    ENDIF = r'ENDIF'
     DECLARE = r'DECLARE'
     BEGIN = r'BEGIN'
     END = r'END'
