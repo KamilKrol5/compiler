@@ -9,9 +9,12 @@ class ASTInterpreter:
         self.program: Program = program
         self.declared_variables: Dict[Declaration, int] = dict()
         self.declared_arrays: Dict[str, Tuple[int, int]] = dict()
+        self._assign_registers_to_variables()
 
+    def _assign_registers_to_variables(self):
         # assign registers to variables
-        for declaration in program.declarations.declarations:
+        # TODO this can be optimized by shifting array indexes at the end
+        for declaration in self.program.declarations.declarations:
             if isinstance(declaration, NumberDeclaration):
                 self.declared_variables[declaration] = self.VARIABLES_START_REGISTER + 1
             elif isinstance(declaration, ArrayDeclaration):
