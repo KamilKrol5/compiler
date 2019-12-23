@@ -61,7 +61,8 @@ class ArrayElementByIntNumberIdentifier(Identifier):
 
     def to_str_with_indent(self, indent=0) -> str:
         return indent * INDENT + f'<ArrayElementByIntNumberIdentifier[ array_identifier = {self.array_identifier}, ' \
-            f'index_value = \n{self.index_value.to_str_with_indent(indent + 1)}\n]>'
+            f'index_value = \n{self.index_value.to_str_with_indent(indent + 1)}\n' + \
+            indent * INDENT + ']>'
 
 
 class Declaration(ABC, PrintableWithIndent):
