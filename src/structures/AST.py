@@ -66,6 +66,7 @@ class ArrayElementByIntNumberIdentifier(Identifier):
 
 
 class Declaration(ABC, PrintableWithIndent):
+    identifier = None
     pass
 
 

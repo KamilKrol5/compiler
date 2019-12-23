@@ -1,0 +1,28 @@
+from structures.AST import *
+from typing import Dict, Tuple
+
+
+class ASTInterpreter:
+    VARIABLES_START_REGISTER = 100
+
+    def __init__(self, program: Program):
+        self.program: Program = program
+        self.declared_variables: Dict[Declaration, int] = dict()
+        self.declared_arrays: Dict[str, Tuple[int, int]] = dict()
+
+        # assign registers to variables
+        for declaration in program.declarations.declarations:
+            if isinstance(declaration, NumberDeclaration):
+                self.declared_variables[declaration] = self.VARIABLES_START_REGISTER + 1
+            elif isinstance(declaration, ArrayDeclaration):
+                array_length = declaration.end_index.value - declaration.begin_index.value
+                real_start = self.VARIABLES_START_REGISTER + 1
+                real_end = self.VARIABLES_START_REGISTER + 1 + array_length
+
+                self.declared_variables[declaration] = real_start
+                self.declared_arrays[declaration.identifier] = (real_start, real_end)
+
+                self.VARIABLES_START_REGISTER = self.VARIABLES_START_REGISTER + array_length
+
+            self.VARIABLES_START_REGISTER = self.VARIABLES_START_REGISTER + 1
+        print(self.VARIABLES_START_REGISTER)
