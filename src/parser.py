@@ -22,7 +22,8 @@ class CompilerParser(Parser):
 
     @_('declarations "," IDENTIFIER "(" NUMBER ":" NUMBER ")"')
     def declarations(self, p) -> Declarations:
-        p.declarations.add_declaration(ArrayDeclaration(p.IDENTIFIER, begin_index=p.NUMBER0, end_index=p.NUMBER1))
+        p.declarations.add_declaration(ArrayDeclaration(p.IDENTIFIER, begin_index=IntNumberValue(int(p.NUMBER0)),
+                                                        end_index=IntNumberValue(int(p.NUMBER1))))
         return p.declarations
 
     @_('IDENTIFIER')
@@ -31,7 +32,8 @@ class CompilerParser(Parser):
 
     @_('IDENTIFIER "(" NUMBER ":" NUMBER ")"')
     def declarations(self, p) -> Declarations:
-        return Declarations(declarations=[ArrayDeclaration(p.IDENTIFIER, begin_index=p.NUMBER0, end_index=p.NUMBER1)])
+        return Declarations(declarations=[ArrayDeclaration(p.IDENTIFIER, begin_index=IntNumberValue(int(p.NUMBER0)),
+                                                           end_index=IntNumberValue(int(p.NUMBER1)))])
 
     @_('commands command')
     def commands(self, p) -> Commands:
@@ -119,7 +121,7 @@ class CompilerParser(Parser):
 
     @_('IDENTIFIER "(" NUMBER ")"')
     def identifier(self, p) -> ArrayElementByIntNumberIdentifier:
-        return ArrayElementByIntNumberIdentifier(p.IDENTIFIE, IntNumberValue(int(p.NUMBER)))
+        return ArrayElementByIntNumberIdentifier(p.IDENTIFIER, IntNumberValue(int(p.NUMBER)))
 
 
 if __name__ == '__main__':
