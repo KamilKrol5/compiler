@@ -17,6 +17,9 @@ def generate_number(x: int, destination_register=0) -> str:
     one_register: int = 1
     result: str = clean_p0() + f'INC\nSTORE {one_register}\nDEC\n'
 
+    is_negative = x < 0
+    x = abs(x)
+
     for digit in bin(x)[2:-1]:
         if digit == '1':
             result = result + f'INC\nSHIFT {one_register}\n'
@@ -24,6 +27,9 @@ def generate_number(x: int, destination_register=0) -> str:
             result = result + f'SHIFT {one_register}\n'
     if bin(x)[-1] == '1':
         result = result + f'INC\n'
+
+    if is_negative:
+        result = result + negate_number()
 
     if destination_register != 0:
         result = result + f'STORE {destination_register}\n'
