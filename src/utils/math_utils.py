@@ -42,14 +42,16 @@ def generate_number(x: int, destination_register=0) -> str:
 def add_constants(x: int, y: int) -> str:
     # Numbers do not have the same sign
     if x >= 0 and y <= 0:
-        return generate_number(y, 2) + generate_number(x) + 'SUB 2'
+        x1, y1 = abs(x), abs(y)
+        return generate_number(y1, 2) + generate_number(x1) + 'SUB 2'
     elif x <= 0 and y >= 0:
-        return generate_number(x, 2) + generate_number(y) + 'SUB 2'
+        x1, y1 = abs(x), abs(y)
+        return generate_number(x1, 2) + generate_number(y1) + 'SUB 2'
 
     # Numbers have the same sign
     result: str = generate_number(x, 2) + generate_number(y) + 'ADD 2'
-    if x < 0 and y < 0:
-        result = result + negate_number()
+    # if x < 0 and y < 0:
+    #     result = result + negate_number()
     return result
 
 
@@ -68,7 +70,7 @@ def multiply_constants(x: int, y: int) -> str:
     if x < y:
         y, x = x, y
         x_register, y_register = y_register, x_register
-    result: str = generate_number(y, y_register) + generate_number(x, x_register)
+    result: str = generate_number(abs(y), y_register) + generate_number(abs(x), x_register)
 
     # compute the largest power of 2 smaller than y
     shifts = floor(log(y, 2))
@@ -78,8 +80,8 @@ def multiply_constants(x: int, y: int) -> str:
     # rest from division y / 2^shifts
     rest = y % 2 ** shifts
     print(rest)
-    generate_number(rest, y_register)
-    result = result + generate_number(shifts, shifts_reg)
+    generate_number(abs(rest), y_register)
+    result = result + generate_number(int(abs(shifts)), shifts_reg)
     result = result + f'LOAD {x_register}\n' + f'SHIFT {shifts_reg}\n'
     # add the rest
     for i in range(0, rest):
