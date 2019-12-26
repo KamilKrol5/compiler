@@ -9,7 +9,7 @@ def test_arr_by_val(i=7):
     res = load_value_by_identifier(arr, {}, 55, {'arr': (120, 135, ArrayDeclaration('arr', IntNumberValue(-5),
                                                                                     IntNumberValue(10)))})
     print(res)
-    assert res == f'LOAD {120 + 5 + i}\nSTORE 55\n'
+    assert res == f'## load value by identifier begin\nLOAD {120 + 5 + i}\nSTORE 55\n## load value by identifier end\n'
 
 
 def test_arr_by_var():
@@ -29,7 +29,7 @@ def test_val_val():
     left = IntNumberValue(5)
     right = IntNumberValue(7)
     cond = TwoValueCondition(left, right, 'LE')
-    print(generate_condition(cond, {"a": 102, "b": 133}))
+    print(generate_condition(cond, {"a": 102, "b": 133}, declared_arrays={}))
 
 
 def test_val_var():
@@ -37,7 +37,7 @@ def test_val_var():
     left = IntNumberValue(5)
     right = IdentifierValue(VariableIdentifier('a'))
     cond = TwoValueCondition(left, right, 'LE')
-    print(generate_condition(cond, {"a": 102, "b": 133}))
+    print(generate_condition(cond, {"a": 102, "b": 133}, declared_arrays={}))
 
 
 def test_var_val():
@@ -45,7 +45,7 @@ def test_var_val():
     right = IntNumberValue(5)
     left = IdentifierValue(VariableIdentifier('a'))
     cond = TwoValueCondition(left, right, 'LE')
-    print(generate_condition(cond, {"a": 102, "b": 133}))
+    print(generate_condition(cond, {"a": 102, "b": 133}, declared_arrays={}))
 
 
 def test_var_var():
@@ -53,7 +53,7 @@ def test_var_var():
     left = IdentifierValue(VariableIdentifier('b'))
     right = IdentifierValue(VariableIdentifier('a'))
     cond = TwoValueCondition(left, right, 'LE')
-    print(generate_condition(cond, {"a": 102, "b": 133}))
+    print(generate_condition(cond, {"a": 102, "b": 133}, declared_arrays={}))
 
 
 def test_arr_by_var_arr_by_var():
@@ -101,14 +101,14 @@ def test_arr_by_val_arr_by_val():
 
 
 if __name__ == '__main__':
-    # test_val_val()
-    # test_var_val()
-    # test_val_var()
-    # test_var_var()
-    # test_arr_by_val()
-    # test_arr_by_val(0)
-    # test_arr_by_var()
-    # test_arr_by_var_arr_by_var()
-    # test_arr_by_val_arr_by_var()
-    # test_arr_by_val_arr_by_val()
+    test_val_val()
+    test_var_val()
+    test_val_var()
+    test_var_var()
+    test_arr_by_val()
+    test_arr_by_val(0)
+    test_arr_by_var()
+    test_arr_by_var_arr_by_var()
+    test_arr_by_val_arr_by_var()
+    test_arr_by_val_arr_by_val()
     test_arr_by_var_arr_by_val()

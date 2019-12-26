@@ -28,7 +28,7 @@ def load_value_by_identifier(identifier: Identifier, declared_variables: Dict[st
         if identifier.array_identifier not in declared_arrays.keys():
             raise ValueError('declared_arrays dictionary does not contain key - identifier name provided with '
                              '"identifier" argument. Variable might not be declared.')
-        result = result + f'LOAD {compute_real_register_of_array_element(declared_arrays, identifier.array_identifier, identifier.index_value.value)}\n'
+        result = result + f'LOAD {compute_real_register_of_array_element(declared_arrays, identifier)}\n'
     elif isinstance(identifier, ArrayElementByVariableIdentifier):
         if identifier.array_identifier not in declared_arrays.keys():
             raise ValueError('declared_arrays dictionary does not contain key - identifier name provided with '
@@ -36,15 +36,9 @@ def load_value_by_identifier(identifier: Identifier, declared_variables: Dict[st
         if identifier.index_identifier not in declared_variables.keys():
             raise ValueError('declared_variables dictionary does not contain key - identifier name provided with '
                              '"identifier" argument. Variable might not be declared.')
-        # TODO
-        # can be improved, numbers which are generated can be generated once when program starts
-        # and taken from known registers
-        result = result + generate_number(declared_arrays[identifier.array_identifier][0], 5) + \
-            generate_number(declared_arrays[identifier.array_identifier][2].begin_index.value, 4) + \
-            f'LOAD {declared_variables[identifier.index_identifier]}\n' \
-            f'SUB 4\n' \
-            f'ADD 5\n' \
-            f'LOAD 0\n'
+
+        result = result + generate_code_for_loading_array_element_by_variable(identifier, declared_variables,
+                                                                              declared_arrays)
 
     if dest_register != 0:
         result = result + f'STORE {dest_register}\n'
