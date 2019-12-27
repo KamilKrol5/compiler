@@ -67,9 +67,9 @@ def generate_code_for_expression(
         declared_arrays: Dict[str, Tuple[int, int, ArrayDeclaration]]
 ) -> str:
     math_code_generator = _MathOperationsCodeGenerator(declared_variables, declared_arrays)
-    if isinstance(expression, ExpressionHavingOnlyOneValue):
+    if expression.number_of_values() == 1:
         return generate_code_for_loading_value(expression.value, declared_variables, declared_arrays)
-    elif isinstance(expression, ExpressionHavingTwoValues):
+    elif expression.number_of_values() == 2:
         if expression.operation not in math_code_generator.expressions.keys():
             raise ValueError('Unknown operator. It is not present in expressions dictionary in expression_utils.')
         result: str = math_code_generator.expressions.get(expression.operation)(math_code_generator, expression)

@@ -108,7 +108,9 @@ class Command(ABC, PrintableWithIndent):
 
 
 class Expression(ABC, PrintableWithIndent):
-    pass
+    @abstractmethod
+    def number_of_values(self) -> int:
+        pass
 
 
 class Condition(ABC, PrintableWithIndent):
@@ -118,6 +120,9 @@ class Condition(ABC, PrintableWithIndent):
 class ExpressionHavingOnlyOneValue(Expression):
     def __init__(self, value: Value):
         self.value = value
+
+    def number_of_values(self) -> int:
+        return 1
 
     def to_str_with_indent(self, indent=0) -> str:
         return indent * INDENT + f'<ExpressionHavingOnlyOneValue[ value = ' \
@@ -129,6 +134,9 @@ class ExpressionHavingTwoValues(Expression):
         self.operation = operation
         self.valueLeft = value1
         self.valueRight = value2
+
+    def number_of_values(self) -> int:
+        return 2
 
     def to_str_with_indent(self, indent=0) -> str:
         return indent * INDENT + f'<ExpressionHavingTwoValues[' \
