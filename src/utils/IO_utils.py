@@ -1,4 +1,3 @@
-from utils.arrays_utils import *
 from utils.value_utils import *
 
 ''' Generates code for read command.'''
