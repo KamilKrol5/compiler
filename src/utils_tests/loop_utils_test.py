@@ -20,7 +20,7 @@ def test_arr_by_var():
     print(res)
     assert res == '## load value by identifier begin\nSUB 0\nINC\nSTORE 1\nDEC\nINC\nSHIFT 1\nINC\nSHIFT 1\nINC\n' \
                   'SHIFT 1\nINC\nSHIFT 1\nSHIFT 1\nSHIFT 1\nSTORE 5\nSUB 0\nINC\nSTORE 1\nDEC\nINC\nSHIFT 1\nSHIFT 1' \
-                  '\nINC\nSHIFT 1\nSHIFT 1\nSTORE 1\nSUB 0\nSUB 1\nSTORE 4\nLOAD 32\nSUB 4\nADD 5\nLOAD 0\nSTORE 55\n' \
+                  '\nINC\nSHIFT 1\nSHIFT 1\nSTORE 1\nSUB 0\nSUB 1\nSTORE 4\nLOAD 32\nSUB 4\nADD 5\nLOADI 0\nSTORE 55\n'\
                   '## load value by identifier end\n'
 
 
