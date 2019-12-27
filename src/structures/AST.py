@@ -1,5 +1,6 @@
-from typing import List
+from typing import List, Dict, Tuple
 from abc import ABC, abstractmethod
+from utils.IO_utils import generate_code_for_write_command, generate_code_for_read_command
 
 INDENT = '   '
 
@@ -104,7 +105,10 @@ class Declarations(PrintableWithIndent):
 
 
 class Command(ABC, PrintableWithIndent):
-    pass
+    @abstractmethod
+    def generate_code(self, declared_variables: Dict[str, int],
+                      declared_arrays: Dict[str, Tuple[int, int, ArrayDeclaration]]) -> str:
+        pass
 
 
 class Expression(ABC, PrintableWithIndent):
@@ -176,6 +180,10 @@ class AssignmentCommand(Command):
         self.expression = expression
         self.identifier = identifier
 
+    def generate_code(self, declared_variables: Dict[str, int],
+                      declared_arrays: Dict[str, Tuple[int, int, ArrayDeclaration]]) -> str:
+        pass
+
     def to_str_with_indent(self, indent=0) -> str:
         return indent * INDENT + f'<AssignmentCommand[ ' \
                f'identifier = \n{self.identifier.to_str_with_indent(indent + 1)} \n' + \
@@ -189,6 +197,10 @@ class IfThenElseCommand(Command):
         self.commands_false = commands1
         self.condition = condition
 
+    def generate_code(self, declared_variables: Dict[str, int],
+                      declared_arrays: Dict[str, Tuple[int, int, ArrayDeclaration]]) -> str:
+        pass
+
     def to_str_with_indent(self, indent=0) -> str:
         return indent * INDENT + f'<IfThenElseCommand[ condition = \n' \
             f'{self.condition.to_str_with_indent(indent+1)},\n' +\
@@ -200,10 +212,13 @@ class IfThenElseCommand(Command):
 
 
 class IfThenCommand(Command):
-
     def __init__(self, condition: Condition, commands: Commands):
         self.commands_true = commands
         self.condition = condition
+
+    def generate_code(self, declared_variables: Dict[str, int],
+                      declared_arrays: Dict[str, Tuple[int, int, ArrayDeclaration]]) -> str:
+        pass
 
     def to_str_with_indent(self, indent=0) -> str:
         return indent * INDENT + f'<IfThenCommand[ condition = \n' \
@@ -219,6 +234,10 @@ class WhileDoCommand(Command):
         self.commands = commands
         self.condition = condition
 
+    def generate_code(self, declared_variables: Dict[str, int],
+                      declared_arrays: Dict[str, Tuple[int, int, ArrayDeclaration]]) -> str:
+        pass
+
     def to_str_with_indent(self, indent=0) -> str:
         return indent * INDENT + f'<WhileDoCommand[ condition =\n' \
             f'{self.condition.to_str_with_indent(indent + 1)}\n' + \
@@ -232,6 +251,10 @@ class DoWhileCommand(Command):
     def __init__(self, condition: Condition, commands: Commands):
         self.commands = commands
         self.condition = condition
+
+    def generate_code(self, declared_variables: Dict[str, int],
+                      declared_arrays: Dict[str, Tuple[int, int, ArrayDeclaration]]) -> str:
+        pass
 
     def to_str_with_indent(self, indent=0) -> str:
         return indent * INDENT + f'<DoWhileCommand[ condition =\n' \
@@ -250,6 +273,10 @@ class ForCommand(Command):
         self.is_down_to = is_down_to
         self.commands = commands
 
+    def generate_code(self, declared_variables: Dict[str, int],
+                      declared_arrays: Dict[str, Tuple[int, int, ArrayDeclaration]]) -> str:
+        pass
+
     def to_str_with_indent(self, indent=0) -> str:
         return indent * INDENT + f'<ForCommand[ iterator_identifier = {self.iterator_identifier}, ' \
             f'is_down_to = {self.is_down_to}, start = \n' + \
@@ -265,6 +292,10 @@ class ReadCommand(Command):
     def __init__(self, identifier: Identifier):
         self.identifier = identifier
 
+    def generate_code(self, declared_variables: Dict[str, int],
+                      declared_arrays: Dict[str, Tuple[int, int, ArrayDeclaration]]) -> str:
+        return generate_code_for_read_command(self, declared_variables, declared_arrays)
+
     def to_str_with_indent(self, indent=0) -> str:
         return indent * INDENT + f'<ReadCommand[ id = \n{self.identifier.to_str_with_indent(indent + 1)}\n' + \
                indent * INDENT + ']>'
@@ -273,6 +304,10 @@ class ReadCommand(Command):
 class WriteCommand(Command):
     def __init__(self, value: Value):
         self.value = value
+
+    def generate_code(self, declared_variables: Dict[str, int],
+                      declared_arrays: Dict[str, Tuple[int, int, ArrayDeclaration]]) -> str:
+        return generate_code_for_write_command(self, declared_variables, declared_arrays)
 
     def to_str_with_indent(self, indent=0) -> str:
         return indent * INDENT + f'<WriteCommand[ value = \n{self.value.to_str_with_indent(indent + 1)}\n' + \
