@@ -36,13 +36,16 @@ class _MathOperationsCodeGenerator:
             raise ValueError('Unknown instance of Value occurred as a rightValue field in provided expression.\n')
 
     def _generate_code_for_multiplication(self, expression: ExpressionHavingTwoValues) -> str:
-        return ' '
+        raise NotImplemented()
+        # TODO
 
     def _generate_code_for_division(self, expression: ExpressionHavingTwoValues) -> str:
-        return ' '
+        raise NotImplemented()
+        # TODO
 
     def _generate_code_for_modulo(self, expression: ExpressionHavingTwoValues) -> str:
-        return ' '
+        raise NotImplemented()
+        # TODO
 
     expressions: Dict[str, Callable] = {
         'PLUS': _generate_code_for_addition,
