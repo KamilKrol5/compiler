@@ -2,8 +2,6 @@ from structures.ast.AST import *
 from utils.expression_utils import generate_code_for_expression, ArrayDeclaration
 from utils.math_utils import generate_number
 from utils.utils import write_to_file
-from utils.math_utils import *
-from structures.AST import *
 
 decl_vars = {"c": 32, "d": 64}
 decl_arrays = {
@@ -17,14 +15,14 @@ def test_single_val_expr():
         -666,
         142)
     code = code + generate_code_for_expression(
-        ExpressionHavingOnlyOneValue(IntNumberValue(111)), decl_vars, decl_arrays
+        ExpressionHavingOneValue(IntNumberValue(111)), decl_vars, decl_arrays
     ) + 'PUT\n'
     code = code + generate_code_for_expression(
-        ExpressionHavingOnlyOneValue(
+        ExpressionHavingOneValue(
             IdentifierValue(VariableIdentifier('d'))), decl_vars, decl_arrays
     ) + 'PUT\n'
     code = code + generate_code_for_expression(
-        ExpressionHavingOnlyOneValue(
+        ExpressionHavingOneValue(
             IdentifierValue(VariableIdentifier('c'))), decl_vars, decl_arrays
     ) + 'PUT\n'
     write_to_file('expr_test.txt', code)
