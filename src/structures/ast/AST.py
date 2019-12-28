@@ -1,8 +1,14 @@
 from typing import List
 from abc import ABC, abstractmethod
-from utils.IO_utils import generate_code_for_write_command, generate_code_for_read_command
+from structures.visitor import Visitor
 
-INDENT = '   '
+INDENT: str = '   '
+
+
+class ASTElement:
+    @abstractmethod
+    def accept(self, visitor: Visitor) -> str:
+        pass
 
 
 class PrintableWithIndent:
@@ -11,15 +17,18 @@ class PrintableWithIndent:
         pass
 
 
-class Value(ABC, PrintableWithIndent):
+class Value(ABC, ASTElement, PrintableWithIndent):
     pass
 
 
-class Identifier(ABC, PrintableWithIndent):
+class Identifier(ABC, ASTElement, PrintableWithIndent):
     pass
 
 
 class IntNumberValue(Value):
+    def accept(self, visitor: Visitor) -> str:
+        return visitor.visit_int_number_value(self)
+
     def __init__(self, value: int):
         self.value = value
 
@@ -28,6 +37,9 @@ class IntNumberValue(Value):
 
 
 class IdentifierValue(Value):
+    def accept(self, visitor: Visitor) -> str:
+        return visitor.visit_identifier_value(self)
+
     def __init__(self, identifier: Identifier):
         self.identifier = identifier
 
@@ -38,6 +50,9 @@ class IdentifierValue(Value):
 
 
 class VariableIdentifier(Identifier):
+    def accept(self, visitor: Visitor) -> str:
+        return visitor.visit_variable_identifier(self)
+
     def __init__(self, identifier_name: str):
         self.identifier_name = identifier_name
 
@@ -46,6 +61,9 @@ class VariableIdentifier(Identifier):
 
 
 class ArrayElementByVariableIdentifier(Identifier):
+    def accept(self, visitor: Visitor) -> str:
+        return visitor.visit_array_element_by_variable_identifier(self)
+
     def __init__(self, array_identifier: str, index_identifier: str):
         self.array_identifier = array_identifier
         self.index_identifier = index_identifier
@@ -56,6 +74,9 @@ class ArrayElementByVariableIdentifier(Identifier):
 
 
 class ArrayElementByIntNumberIdentifier(Identifier):
+    def accept(self, visitor: Visitor) -> str:
+        return visitor.visit_array_element_by_int_number_identifier(self)
+
     def __init__(self, array_identifier: str, index_value: IntNumberValue):
         self.array_identifier = array_identifier
         self.index_value = index_value
@@ -66,12 +87,15 @@ class ArrayElementByIntNumberIdentifier(Identifier):
             indent * INDENT + ']>'
 
 
-class Declaration(ABC, PrintableWithIndent):
+class Declaration(ABC, ASTElement, PrintableWithIndent):
     identifier = None
     pass
 
 
 class NumberDeclaration(Declaration):
+    def accept(self, visitor: Visitor) -> str:
+        return visitor.visit_number_declaration(self)
+
     def __init__(self, identifier: str):
         self.identifier = identifier
 
@@ -80,6 +104,9 @@ class NumberDeclaration(Declaration):
 
 
 class ArrayDeclaration(Declaration):
+    def accept(self, visitor: Visitor) -> str:
+        return visitor.visit_array_declaration(self)
+
     def __init__(self, identifier: str, begin_index: IntNumberValue, end_index: IntNumberValue):
         self.end_index = end_index
         self.begin_index = begin_index
@@ -93,7 +120,10 @@ class ArrayDeclaration(Declaration):
                indent * INDENT + f']>'
 
 
-class Declarations(PrintableWithIndent):
+class Declarations(ASTElement, PrintableWithIndent):
+    def accept(self, visitor: Visitor) -> str:
+        return visitor.visit_declarations(self)
+
     def __init__(self, declarations: List[Declaration]):
         self.declarations = declarations
 
@@ -104,24 +134,24 @@ class Declarations(PrintableWithIndent):
         return str(('\n' + (indent * INDENT)).join(map(lambda x: x.to_str_with_indent(indent + 1), self.declarations)))
 
 
-class Command(ABC, PrintableWithIndent):
-    @abstractmethod
-    def generate_code(self, declared_variables: Dict[str, int],
-                      declared_arrays: Dict[str, Tuple[int, int, ArrayDeclaration]]) -> str:
-        pass
+class Command(ABC, ASTElement, PrintableWithIndent):
+    pass
 
 
-class Expression(ABC, PrintableWithIndent):
+class Expression(ABC, ASTElement, PrintableWithIndent):
     @abstractmethod
     def number_of_values(self) -> int:
         pass
 
 
-class Condition(ABC, PrintableWithIndent):
+class Condition(ABC, ASTElement, PrintableWithIndent):
     pass
 
 
-class ExpressionHavingOnlyOneValue(Expression):
+class ExpressionHavingOneValue(Expression):
+    def accept(self, visitor: Visitor) -> str:
+        return visitor.visit_expression_having_one_value(self)
+
     def __init__(self, value: Value):
         self.value = value
 
@@ -134,6 +164,9 @@ class ExpressionHavingOnlyOneValue(Expression):
 
 
 class ExpressionHavingTwoValues(Expression):
+    def accept(self, visitor: Visitor) -> str:
+        return visitor.visit_expression_having_two_values(self)
+
     def __init__(self, value1: Value, value2: Value, operation: str):
         self.operation = operation
         self.valueLeft = value1
@@ -151,6 +184,9 @@ class ExpressionHavingTwoValues(Expression):
 
 class TwoValueCondition(Condition):
 
+    def accept(self, visitor: Visitor) -> str:
+        return visitor.visit_two_value_condition(self)
+
     def __init__(self, value1: Value, value2: Value, compare_operation: str):
         self.compare_operation = compare_operation
         self.valueLeft = value1
@@ -163,7 +199,10 @@ class TwoValueCondition(Condition):
                indent * INDENT + f'operation = {self.compare_operation}\n' + indent * INDENT + ']>'
 
 
-class Commands(PrintableWithIndent):
+class Commands(ASTElement, PrintableWithIndent):
+    def accept(self, visitor: Visitor) -> str:
+        return visitor.visit_commands(self)
+
     def __init__(self, commands: List[Command]):
         self.commands = commands
 
@@ -176,13 +215,12 @@ class Commands(PrintableWithIndent):
 
 
 class AssignmentCommand(Command):
+    def accept(self, visitor: Visitor) -> str:
+        return visitor.visit_assignment_command(self)
+
     def __init__(self, identifier: Identifier, expression: Expression):
         self.expression = expression
         self.identifier = identifier
-
-    def generate_code(self, declared_variables: Dict[str, int],
-                      declared_arrays: Dict[str, Tuple[int, int, ArrayDeclaration]]) -> str:
-        pass
 
     def to_str_with_indent(self, indent=0) -> str:
         return indent * INDENT + f'<AssignmentCommand[ ' \
@@ -192,14 +230,13 @@ class AssignmentCommand(Command):
 
 
 class IfThenElseCommand(Command):
+    def accept(self, visitor: Visitor) -> str:
+        return visitor.visit_if_then_else_command(self)
+
     def __init__(self, condition: Condition, commands0: Commands, commands1: Commands):
         self.commands_true = commands0
         self.commands_false = commands1
         self.condition = condition
-
-    def generate_code(self, declared_variables: Dict[str, int],
-                      declared_arrays: Dict[str, Tuple[int, int, ArrayDeclaration]]) -> str:
-        pass
 
     def to_str_with_indent(self, indent=0) -> str:
         return indent * INDENT + f'<IfThenElseCommand[ condition = \n' \
@@ -212,13 +249,12 @@ class IfThenElseCommand(Command):
 
 
 class IfThenCommand(Command):
+    def accept(self, visitor: Visitor) -> str:
+        return visitor.visit_if_then_command(self)
+
     def __init__(self, condition: Condition, commands: Commands):
         self.commands_true = commands
         self.condition = condition
-
-    def generate_code(self, declared_variables: Dict[str, int],
-                      declared_arrays: Dict[str, Tuple[int, int, ArrayDeclaration]]) -> str:
-        pass
 
     def to_str_with_indent(self, indent=0) -> str:
         return indent * INDENT + f'<IfThenCommand[ condition = \n' \
@@ -230,13 +266,12 @@ class IfThenCommand(Command):
 
 class WhileDoCommand(Command):
 
+    def accept(self, visitor: Visitor) -> str:
+        return visitor.visit_while_do_command(self)
+
     def __init__(self, condition: Condition, commands: Commands):
         self.commands = commands
         self.condition = condition
-
-    def generate_code(self, declared_variables: Dict[str, int],
-                      declared_arrays: Dict[str, Tuple[int, int, ArrayDeclaration]]) -> str:
-        pass
 
     def to_str_with_indent(self, indent=0) -> str:
         return indent * INDENT + f'<WhileDoCommand[ condition =\n' \
@@ -248,13 +283,12 @@ class WhileDoCommand(Command):
 
 class DoWhileCommand(Command):
 
+    def accept(self, visitor: Visitor) -> str:
+        return visitor.visit_do_while_command(self)
+
     def __init__(self, condition: Condition, commands: Commands):
         self.commands = commands
         self.condition = condition
-
-    def generate_code(self, declared_variables: Dict[str, int],
-                      declared_arrays: Dict[str, Tuple[int, int, ArrayDeclaration]]) -> str:
-        pass
 
     def to_str_with_indent(self, indent=0) -> str:
         return indent * INDENT + f'<DoWhileCommand[ condition =\n' \
@@ -266,16 +300,15 @@ class DoWhileCommand(Command):
 
 class ForCommand(Command):
 
+    def accept(self, visitor: Visitor) -> str:
+        return visitor.visit_for_command(self)
+
     def __init__(self, iterator_identifier: str, start: Value, end: Value, is_down_to: bool, commands: Commands):
         self.iterator_identifier = iterator_identifier
         self.start = start
         self.end = end
         self.is_down_to = is_down_to
         self.commands = commands
-
-    def generate_code(self, declared_variables: Dict[str, int],
-                      declared_arrays: Dict[str, Tuple[int, int, ArrayDeclaration]]) -> str:
-        pass
 
     def to_str_with_indent(self, indent=0) -> str:
         return indent * INDENT + f'<ForCommand[ iterator_identifier = {self.iterator_identifier}, ' \
@@ -289,12 +322,11 @@ class ForCommand(Command):
 
 
 class ReadCommand(Command):
+    def accept(self, visitor: Visitor) -> str:
+        return visitor.visit_read_command(self)
+
     def __init__(self, identifier: Identifier):
         self.identifier = identifier
-
-    def generate_code(self, declared_variables: Dict[str, int],
-                      declared_arrays: Dict[str, Tuple[int, int, ArrayDeclaration]]) -> str:
-        return generate_code_for_read_command(self, declared_variables, declared_arrays)
 
     def to_str_with_indent(self, indent=0) -> str:
         return indent * INDENT + f'<ReadCommand[ id = \n{self.identifier.to_str_with_indent(indent + 1)}\n' + \
@@ -302,19 +334,21 @@ class ReadCommand(Command):
 
 
 class WriteCommand(Command):
+    def accept(self, visitor: Visitor) -> str:
+        return visitor.visit_write_command(self)
+
     def __init__(self, value: Value):
         self.value = value
-
-    def generate_code(self, declared_variables: Dict[str, int],
-                      declared_arrays: Dict[str, Tuple[int, int, ArrayDeclaration]]) -> str:
-        return generate_code_for_write_command(self, declared_variables, declared_arrays)
 
     def to_str_with_indent(self, indent=0) -> str:
         return indent * INDENT + f'<WriteCommand[ value = \n{self.value.to_str_with_indent(indent + 1)}\n' + \
                indent * INDENT + ']>'
 
 
-class Program:
+class Program(ASTElement):
+    def accept(self, visitor: Visitor) -> str:
+        return visitor.visit_program(self)
+
     def __init__(self, declarations: Declarations, commands: Commands):
         self.commands = commands
         self.declarations = declarations
