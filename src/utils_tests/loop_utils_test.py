@@ -1,6 +1,7 @@
-from utils.loop_utils import *
-from utils.loop_utils import *
-from structures.AST import *
+from structures.ast.AST import ArrayDeclaration, TwoValueCondition, IntNumberValue, ArrayElementByIntNumberIdentifier, \
+    ArrayElementByVariableIdentifier, VariableIdentifier, IdentifierValue
+from utils.loop_utils import generate_condition
+from utils.value_utils import load_value_by_identifier
 
 
 def test_arr_by_val(i=7):

@@ -1,4 +1,6 @@
+from structures.ast.AST import IntNumberValue, IdentifierValue
 from utils.IO_utils import *
+from utils.math_utils import generate_number
 from utils.utils import write_to_file
 
 decl_vars = {"c": 32, "d": 64}

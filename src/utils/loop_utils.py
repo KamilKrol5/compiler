@@ -1,8 +1,6 @@
-from structures.AST import *
-from utils.math_utils import *
-from utils.label_provider import LabelProvider
 from typing import Dict, Tuple
-from utils.arrays_utils import *
+from structures.ast.AST import ForCommand, TwoValueCondition, ArrayDeclaration, IdentifierValue, VariableIdentifier
+from utils.value_utils import load_value_by_identifier, generate_number
 
 ''' Generates for loop'''
 

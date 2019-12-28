@@ -1,4 +1,6 @@
-from utils.expression_utils import generate_code_for_expression
+from structures.ast.AST import *
+from utils.expression_utils import generate_code_for_expression, ArrayDeclaration
+from utils.math_utils import generate_number
 from utils.utils import write_to_file
 from utils.math_utils import *
 from structures.AST import *

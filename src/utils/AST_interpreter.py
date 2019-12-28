@@ -1,6 +1,9 @@
-from structures.AST import *
+from structures.ast.AST import *
 from typing import Dict, Tuple
 
+from utils.IO_utils import generate_code_for_write_command, generate_code_for_read_command
+from utils.command_utils import generate_code_for_if_then_command
+from utils.label_provider import LabelProvider
 
 class ASTInterpreter:
     VARIABLES_START_REGISTER = 100

@@ -1,5 +1,5 @@
-from utils.loop_utils import *
-from utils.math_operations_code_generator import MathOperationsCodeGenerator
+from structures.ast.AST import Expression, ArrayDeclaration
+from utils.math_operations_code_generator import MathOperationsCodeGenerator, Dict, Tuple
 from utils.value_utils import generate_code_for_loading_value
 
 

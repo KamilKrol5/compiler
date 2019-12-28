@@ -1,6 +1,6 @@
-from structures.AST import *
 from utils.math_utils import generate_number
 from typing import Dict, Tuple
+from structures.ast.AST import ArrayDeclaration, ArrayElementByIntNumberIdentifier, ArrayElementByVariableIdentifier
 
 ''' Computes relative register of element of the array based on array declaration.
     Example: if array is like: a(-5,10) then a(-5) = 0, a(0) = 5 etc.'''

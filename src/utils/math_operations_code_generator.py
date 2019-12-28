@@ -1,3 +1,4 @@
+from structures.ast.AST import ExpressionHavingTwoValues, IntNumberValue
 from utils.loop_utils import *
 from utils.value_utils import generate_code_for_loading_value, compute_value_register
 from typing import Callable

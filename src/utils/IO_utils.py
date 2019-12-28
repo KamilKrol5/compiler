@@ -1,4 +1,10 @@
-from utils.value_utils import *
+from typing import Dict, Tuple
+
+from utils.arrays_utils import compute_real_register_of_array_element, \
+    generate_code_for_computing_index_of_array_element_by_variable
+from utils.value_utils import generate_code_for_loading_value
+from structures.ast.AST import ReadCommand, ArrayDeclaration, WriteCommand, VariableIdentifier, \
+    ArrayElementByIntNumberIdentifier, ArrayElementByVariableIdentifier
 
 ''' Generates code for read command.'''
 
