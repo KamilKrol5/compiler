@@ -2,7 +2,6 @@ import re
 
 
 def convert_labels_to_registers(filename='filename.txt'):
-    filename: str = 'command_test.txt'
 
     labels_dest = dict()
     labels_to_replace = dict()
@@ -25,11 +24,12 @@ def convert_labels_to_registers(filename='filename.txt'):
                         labels_to_replace[lbl] = line_counter
                     else:
                         raise Exception('No valid label in line.')
-                    print(line)
+                    #print(line)
                 data = data + line
 
         for label, reg in labels_dest.items():
-            data = re.sub(r'#'+label + r'.*', str(reg), data)
+            regex = rf'#{label}$'
+            data = re.sub(regex, str(reg), data, flags=re.MULTILINE)
             labels_to_replace[label] = None
 
         if all(map(lambda x: x is None, labels_to_replace.values())):
@@ -39,10 +39,11 @@ def convert_labels_to_registers(filename='filename.txt'):
 
         data = re.sub(r'^(##).*\n', '', data, flags=re.MULTILINE)
         print('________________________')
-        print(data)
+        #print(data)
         with(open(f'label_converter_{filename}.out', 'w', newline='\n')) as file2:
             file2.write(data)
 
 
 if __name__ == '__main__':
-    convert_labels_to_registers()
+    convert_labels_to_registers('command_test.txt')
+    convert_labels_to_registers('command_test_all.txt')
