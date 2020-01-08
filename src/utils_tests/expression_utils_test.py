@@ -25,7 +25,7 @@ def test_single_val_expr():
         ExpressionHavingOneValue(
             IdentifierValue(VariableIdentifier('c'))), decl_vars, decl_arrays
     ) + 'PUT\n'
-    write_to_file('expr_test.txt', code)
+    return code
 
 
 # Expected: -58, 551, 557, -6
@@ -61,7 +61,7 @@ def test_add():
         ), decl_vars, decl_arrays
     ) + 'PUT\n'
 
-    write_to_file('expr_test.txt', code)
+    return code
 
 
 # Expected: 62, -559, -553, -126
@@ -97,8 +97,9 @@ def test_sub():
         ), decl_vars, decl_arrays
     ) + 'PUT\n'
 
-    write_to_file('expr_test.txt', code)
+    return code
 
 
 if __name__ == '__main__':
-    test_sub()
+    code_all = test_single_val_expr() + test_add() + test_sub()
+    write_to_file('expr_test.txt', code_all)
