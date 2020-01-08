@@ -38,6 +38,20 @@ def generate_code_for_loading_array_element_by_variable(
            f'LOADI 0\n'
 
 
+''' Generates code for storing value of array element which is indexed by variable. Store is called.
+    Registers used: 0-5'''
+
+
+def generate_code_for_storing_array_element_by_variable(
+        identifier: ArrayElementByVariableIdentifier,
+        declared_variables: Dict[str, int],
+        declared_arrays: Dict[str, Tuple[int, int, ArrayDeclaration]]
+) -> str:
+    return generate_code_for_computing_index_of_array_element_by_variable(identifier, declared_variables,
+                                                                          declared_arrays) + \
+           f'STOREI 0\n'
+
+
 ''' Generates code for computing index of array element which is indexed by variable. 
     Computed index (result) is present in register 0 (p0).
     Example: arr(b) is computed from b_value_reg - arr_fictional_indexing_start_register + arr_real_start_register
