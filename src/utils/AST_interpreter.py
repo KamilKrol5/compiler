@@ -2,7 +2,9 @@ from structures.ast.AST import *
 from typing import Dict, Tuple
 
 from utils.IO_utils import generate_code_for_write_command, generate_code_for_read_command
-from utils.command_utils import generate_code_for_if_then_command, generate_code_for_if_then_else_command
+from utils.command_utils import write_code_for_if_then_command, write_code_for_if_then_else_command, \
+    write_code_for_assignment_command
+from utils.expression_utils import generate_code_for_expression
 from utils.label_provider import LabelProvider
 from utils.loop_utils import generate_condition
 
@@ -14,7 +16,7 @@ class ASTInterpreter(Visitor):
         self.program: Program = program
         self.declared_variables: Dict[str, int] = dict()
         self.declared_arrays: Dict[str, Tuple[int, int, ArrayDeclaration]] = dict()
-        self.generated_code: str = '## Program\n'
+        self.generated_code: List[str] = ['## Program\n']
         self.label_provider: LabelProvider = LabelProvider('#label ')
         self._assign_registers_to_variables()
 
@@ -37,10 +39,10 @@ class ASTInterpreter(Visitor):
             self.VARIABLES_START_REGISTER = self.VARIABLES_START_REGISTER + 1
         print(self.VARIABLES_START_REGISTER)
 
-    def visit_int_number_value(self, int_number_value: 'IntNumberValue') -> str:
+    def visit_int_number_value(self, int_number_value: 'IntNumberValue') -> int:
         pass
 
-    def visit_identifier_value(self, identifier_value: 'IdentifierValue') -> str:
+    def visit_identifier_value(self, identifier_value: 'IdentifierValue') -> int:
         pass
 
     def visit_array_element_by_variable_identifier(
@@ -68,47 +70,53 @@ class ASTInterpreter(Visitor):
         pass
 
     def visit_expression_having_one_value(self, expression: 'ExpressionHavingOneValue') -> str:
-        pass
+        self.generated_code.append(
+            generate_code_for_expression(expression, self.declared_variables, self.declared_arrays))
 
     def visit_expression_having_two_values(self, expression: 'ExpressionHavingTwoValues') -> str:
-        pass
+        self.generated_code.append(
+            generate_code_for_expression(expression, self.declared_variables, self.declared_arrays))
 
     def visit_two_value_condition(self, condition: 'TwoValueCondition') -> str:
         # TODO change it
-        return generate_condition(condition, self.declared_variables, self.declared_arrays)
+        self.generated_code.append(
+            generate_condition(condition, self.declared_variables, self.declared_arrays))
 
-    def visit_commands(self, commands: 'Commands') -> str:
-        res: str = ''
+    def visit_commands(self, commands: 'Commands') -> None:
         for c in commands.commands:
-            res = res + c.accept(self)
-        return res
+            c.accept(self)
 
-    def visit_assignment_command(self, assignment_command: 'AssignmentCommand') -> str:
+    def visit_assignment_command(self, assignment_command: 'AssignmentCommand') -> None:
+        write_code_for_assignment_command(assignment_command, self)
+
+    def visit_if_then_else_command(self, if_then_else_command: 'IfThenElseCommand') -> None:
+        write_code_for_if_then_else_command(if_then_else_command, self)
+
+    def visit_if_then_command(self, if_then_command: 'IfThenCommand') -> None:
+        write_code_for_if_then_command(if_then_command, self)
+
+    def visit_while_do_command(self, while_do_command: 'WhileDoCommand') -> None:
         pass
 
-    def visit_if_then_else_command(self, if_then_else_command: 'IfThenElseCommand') -> str:
-        return generate_code_for_if_then_else_command(if_then_else_command, self)
-
-    def visit_if_then_command(self, if_then_command: 'IfThenCommand') -> str:
-        return generate_code_for_if_then_command(if_then_command, self)
-
-    def visit_while_do_command(self, while_do_command: 'WhileDoCommand') -> str:
+    def visit_do_while_command(self, do_while_command: 'DoWhileCommand') -> None:
         pass
 
-    def visit_do_while_command(self, do_while_command: 'DoWhileCommand') -> str:
+    def visit_for_command(self, for_command: 'ForCommand') -> None:
         pass
 
-    def visit_for_command(self, for_command: 'ForCommand') -> str:
-        pass
-
-    def visit_read_command(self, read_command: 'ReadCommand') -> str:
+    def visit_read_command(self, read_command: 'ReadCommand') -> None:
         # TODO change it
-        return generate_code_for_read_command(read_command, self.declared_variables, self.declared_arrays)
+        self.generated_code.append(
+            generate_code_for_read_command(read_command, self.declared_variables, self.declared_arrays))
 
-    def visit_write_command(self, write_command: 'WriteCommand') -> str:
+    def visit_write_command(self, write_command: 'WriteCommand') -> None:
         # TODO change it
-        return generate_code_for_write_command(write_command, self.declared_variables, self.declared_arrays)
+        self.generated_code.append(
+            generate_code_for_write_command(write_command, self.declared_variables, self.declared_arrays))
 
     def visit_program(self, program: 'Program') -> str:
         # declaration are handled in __init__
-        return program.commands.accept(self)
+        result_code: str = ""
+        for code_fragment in self.generated_code:
+            result_code = result_code + code_fragment
+        return result_code

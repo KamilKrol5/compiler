@@ -15,27 +15,29 @@ interpreter.declared_arrays = decl_arrays
 
 
 # Expected 1
-def test_if_then_neq() -> str:
+def test_if_then_neq() -> Command:
     cond = IfThenCommand(
         TwoValueCondition(IdentifierValue(VariableIdentifier('d')), IntNumberValue(555), 'NEQ'),
         Commands(commands=[
             WriteCommand(IntNumberValue(1))
         ]))
-    return cond.accept(interpreter)
+    cond.accept(interpreter)
+    return cond
 
 
 # Expected 1
-def test_if_then_eq() -> str:
+def test_if_then_eq() -> Command:
     cond = IfThenCommand(
         TwoValueCondition(IdentifierValue(VariableIdentifier('c')), IntNumberValue(555), 'EQ'),
         Commands(commands=[
             WriteCommand(IntNumberValue(1))
         ]))
-    return cond.accept(interpreter)
+    cond.accept(interpreter)
+    return cond
 
 
 # Expected 33, 22, 11
-def test_if_then_le_ge_eq() -> str:
+def test_if_then_le_ge_eq() -> Command:
     cond = IfThenCommand(
         TwoValueCondition(IdentifierValue(VariableIdentifier('d')), IntNumberValue(555), 'LE'),
         Commands(commands=[
@@ -54,11 +56,12 @@ def test_if_then_le_ge_eq() -> str:
                         ])
                     )]))
         ]))
-    return cond.accept(interpreter)
+    cond.accept(interpreter)
+    return cond
 
 
 # Expected 33, 22
-def test_if_then_leq_geq_neq() -> str:
+def test_if_then_leq_geq_neq() -> Command:
     cond = IfThenCommand(
         TwoValueCondition(IdentifierValue(VariableIdentifier('d')), IntNumberValue(555), 'LEQ'),
         Commands(commands=[
@@ -77,11 +80,12 @@ def test_if_then_leq_geq_neq() -> str:
                         ])
                     )]))
         ]))
-    return cond.accept(interpreter)
+    cond.accept(interpreter)
+    return cond
 
 
 # Expected <33>, 555, -2000, 2555, <22>, <11>, <111>
-def test_if_then_geq_ge_leq() -> str:
+def test_if_then_geq_ge_leq() -> Command:
     cond = IfThenCommand(
         TwoValueCondition(IdentifierValue(VariableIdentifier('d')), IdentifierValue(VariableIdentifier('d')), 'GEQ'),
         Commands(commands=[
@@ -108,11 +112,12 @@ def test_if_then_geq_ge_leq() -> str:
                         ])
                     )]))
         ]))
-    return cond.accept(interpreter)
+    cond.accept(interpreter)
+    return cond
 
 
 # Expected 44, 555, 1000, -2000
-def test_if_then_else_neq_on_false() -> str:
+def test_if_then_else_neq_on_false() -> Command:
     cond = IfThenElseCommand(
         condition=TwoValueCondition(IdentifierValue(VariableIdentifier('d')), IdentifierValue(VariableIdentifier('d')),
                                     'NEQ'),
@@ -125,11 +130,12 @@ def test_if_then_else_neq_on_false() -> str:
             WriteCommand(IdentifierValue(ArrayElementByVariableIdentifier('brr', 'd'))),
             WriteCommand(IdentifierValue(ArrayElementByIntNumberIdentifier('arr', IntNumberValue(-15)))),
         ]))
-    return cond.accept(interpreter)
+    cond.accept(interpreter)
+    return cond
 
 
 # Expected: <33>
-def test_if_then_else_neg_on_true() -> str:
+def test_if_then_else_neg_on_true() -> Command:
     cond = IfThenElseCommand(
         condition=TwoValueCondition(IdentifierValue(VariableIdentifier('c')), IdentifierValue(VariableIdentifier('d')),
                                     'NEQ'),
@@ -142,11 +148,12 @@ def test_if_then_else_neg_on_true() -> str:
             WriteCommand(IdentifierValue(ArrayElementByVariableIdentifier('brr', 'd'))),
             WriteCommand(IdentifierValue(ArrayElementByIntNumberIdentifier('arr', IntNumberValue(-15)))),
         ]))
-    return cond.accept(interpreter)
+    cond.accept(interpreter)
+    return cond
 
 
 # Expected: 44, 1000, 555, -2000
-def test_if_then_else_eq_on_false() -> str:
+def test_if_then_else_eq_on_false() -> Command:
     cond = IfThenElseCommand(
         condition=TwoValueCondition(IdentifierValue(ArrayElementByVariableIdentifier('brr', 'd')),  # 1000 == 2
                                     IdentifierValue(VariableIdentifier('d')),
@@ -160,11 +167,12 @@ def test_if_then_else_eq_on_false() -> str:
             WriteCommand(IdentifierValue(VariableIdentifier('c'))),
             WriteCommand(IdentifierValue(ArrayElementByIntNumberIdentifier('arr', IntNumberValue(-15)))),
         ]))
-    return cond.accept(interpreter)
+    cond.accept(interpreter)
+    return cond
 
 
 # Expected: 11, 1000
-def test_if_then_else_eq_on_true() -> str:
+def test_if_then_else_eq_on_true() -> Command:
     cond = IfThenElseCommand(
         condition=TwoValueCondition(IdentifierValue(ArrayElementByVariableIdentifier('brr', 'd')),  # 1000 == 1000
                                     IdentifierValue(ArrayElementByVariableIdentifier('brr', 'd')),
@@ -176,11 +184,12 @@ def test_if_then_else_eq_on_true() -> str:
         commands_false=Commands(commands=[
             WriteCommand(IntNumberValue(-44))
         ]))
-    return cond.accept(interpreter)
+    cond.accept(interpreter)
+    return cond
 
 
 # Expected: 100, 200
-def test_if_then_else_le_on_true_ge_on_false() -> str:
+def test_if_then_else_le_on_true_ge_on_false() -> Command:
     cond = IfThenElseCommand(
         condition=TwoValueCondition(IdentifierValue(VariableIdentifier('d')),  # 2 < 1000
                                     IdentifierValue(ArrayElementByVariableIdentifier('brr', 'd')),
@@ -203,11 +212,12 @@ def test_if_then_else_le_on_true_ge_on_false() -> str:
         commands_false=Commands(commands=[
             WriteCommand(IntNumberValue(-44))
         ]))
-    return cond.accept(interpreter)
+    cond.accept(interpreter)
+    return cond
 
 
 # Expected: 200, 300
-def test_if_then_else_le_on_false_ge_on_true() -> str:
+def test_if_then_else_le_on_false_ge_on_true() -> Command:
     cond = IfThenElseCommand(
         condition=TwoValueCondition(IdentifierValue(VariableIdentifier('d')),  # 2 < -2000
                                     IdentifierValue(ArrayElementByIntNumberIdentifier('arr', IntNumberValue(-15))),
@@ -230,11 +240,12 @@ def test_if_then_else_le_on_false_ge_on_true() -> str:
                     WriteCommand(IntNumberValue(-44))
                 ]))
         ]))
-    return cond.accept(interpreter)
+    cond.accept(interpreter)
+    return cond
 
 
 # Expected: 100, 200
-def test_if_then_else_leq_on_true_geq_on_false() -> str:
+def test_if_then_else_leq_on_true_geq_on_false() -> Command:
     cond = IfThenElseCommand(
         condition=TwoValueCondition(IdentifierValue(VariableIdentifier('d')),  # 2 <= 1000
                                     IdentifierValue(ArrayElementByVariableIdentifier('brr', 'd')),
@@ -257,11 +268,12 @@ def test_if_then_else_leq_on_true_geq_on_false() -> str:
         commands_false=Commands(commands=[
             WriteCommand(IntNumberValue(-44))
         ]))
-    return cond.accept(interpreter)
+    cond.accept(interpreter)
+    return cond
 
 
 # Expected: 100, 200
-def test_if_then_else_leq_on_true_geq_on_true_with_equality() -> str:
+def test_if_then_else_leq_on_true_geq_on_true_with_equality() -> Command:
     cond = IfThenElseCommand(
         condition=TwoValueCondition(  # 1000 <= 1000
             IdentifierValue(ArrayElementByVariableIdentifier('brr', 'd')),
@@ -285,11 +297,12 @@ def test_if_then_else_leq_on_true_geq_on_true_with_equality() -> str:
         commands_false=Commands(commands=[
             WriteCommand(IntNumberValue(-44))
         ]))
-    return cond.accept(interpreter)
+    cond.accept(interpreter)
+    return cond
 
 
 # Expected: 200, 300
-def test_if_then_else_leq_on_false_geq_on_true() -> str:
+def test_if_then_else_leq_on_false_geq_on_true() -> Command:
     cond = IfThenElseCommand(
         condition=TwoValueCondition(IdentifierValue(VariableIdentifier('d')),  # 2 <= -2000
                                     IdentifierValue(ArrayElementByIntNumberIdentifier('arr', IntNumberValue(-15))),
@@ -312,28 +325,36 @@ def test_if_then_else_leq_on_false_geq_on_true() -> str:
                     WriteCommand(IntNumberValue(-44))
                 ]))
         ]))
-    return cond.accept(interpreter)
+    cond.accept(interpreter)
+    return cond
 
 
 if __name__ == '__main__':
     code_generating_constants: str = generate_number(555, 32) + generate_number(2, 64) + generate_number(-2000, 125) + \
         generate_number(-666, 142) + generate_number(1000, 263)
+    interpreter.generated_code.append(code_generating_constants)
+    program1 = Program(Declarations([]), Commands([
+            test_if_then_else_leq_on_false_geq_on_true(),
+            test_if_then_else_leq_on_true_geq_on_false(),
+            test_if_then_else_leq_on_true_geq_on_true_with_equality()
+    ]))
     # c = 555, d = 2, arr[-15] = -2000, brr[2] =  brr[d] = 1000
-    code = code_generating_constants + \
-        test_if_then_else_leq_on_false_geq_on_true() \
-        + test_if_then_else_leq_on_true_geq_on_false() \
-        + test_if_then_else_leq_on_true_geq_on_true_with_equality()
+    code = interpreter.visit_program(program1)
     write_to_file('../label_converter/command_test.txt', code)
 
+    interpreter.generated_code.clear()
+    interpreter.generated_code.append(code_generating_constants)
+    program1 = Program(Declarations([]), Commands([
+        test_if_then_eq(), test_if_then_neq(), test_if_then_geq_ge_leq(),
+        test_if_then_leq_geq_neq(), test_if_then_le_ge_eq(), test_if_then_else_eq_on_false(),
+        test_if_then_else_eq_on_true(), test_if_then_else_neg_on_true(), test_if_then_else_neq_on_false(),
+        test_if_then_else_le_on_false_ge_on_true(), test_if_then_else_le_on_true_ge_on_false(),
+        test_if_then_else_leq_on_false_geq_on_true(), test_if_then_else_leq_on_true_geq_on_false(),
+        test_if_then_else_leq_on_true_geq_on_true_with_equality()
+    ]))
     # 1, 1, <33>, 555, -2000, 2555, <22>, <11>, <111>, 33, 22, 33, 22, 11, 44, 1000, 555, -2000, 11, 1000,
     # <33>, 44, 555, 1000, -2000, 200, 300,  100, 200,  200, 300,  100, 200, 100, 200
-    code_all = code_generating_constants + test_if_then_eq() + test_if_then_neq() + test_if_then_geq_ge_leq() + \
-        test_if_then_leq_geq_neq() + test_if_then_le_ge_eq() + test_if_then_else_eq_on_false() + \
-        test_if_then_else_eq_on_true() + test_if_then_else_neg_on_true() + test_if_then_else_neq_on_false() + \
-        test_if_then_else_le_on_false_ge_on_true() + test_if_then_else_le_on_true_ge_on_false() + \
-        test_if_then_else_leq_on_false_geq_on_true() \
-        + test_if_then_else_leq_on_true_geq_on_false() \
-        + test_if_then_else_leq_on_true_geq_on_true_with_equality()
+    code_all: str = interpreter.visit_program(program1)
     write_to_file('../label_converter/command_test_all.txt', code_all)
 
     import subprocess as subpr
