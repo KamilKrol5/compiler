@@ -27,3 +27,4 @@ if __name__ == '__main__':
     r = r + modulo_on_constants(50, 4, 'xd3', 'xd4')
     r = r + 'PUT\n'
     write_to_file('text.gb', r)
+
