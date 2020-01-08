@@ -1,7 +1,7 @@
 from abc import abstractmethod, ABC
 
 
-class IdentifierRegisterRepresentationAbstract(ABC):
+class AbstractIdentifierRegisterRepresentation(ABC):
     @abstractmethod
     def is_numeric(self) -> bool:
         pass
@@ -11,7 +11,7 @@ class IdentifierRegisterRepresentationAbstract(ABC):
         pass
 
 
-class IdentifierRegisterPureNumberRepresentation(IdentifierRegisterRepresentationAbstract):
+class IdentifierRegisterRepresentation(AbstractIdentifierRegisterRepresentation):
     def __init__(self, value: int):
         self.value = value
 
@@ -22,7 +22,7 @@ class IdentifierRegisterPureNumberRepresentation(IdentifierRegisterRepresentatio
         return True
 
 
-class IdentifierRegisterGeneratingStringRepresentation(IdentifierRegisterRepresentationAbstract):
+class IdentifierRegisterRepresentation(AbstractIdentifierRegisterRepresentation):
     def __init__(self, generating_str: str):
         self.generating_str = generating_str
 
