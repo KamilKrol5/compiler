@@ -233,9 +233,9 @@ class IfThenElseCommand(Command):
     def accept(self, visitor: Visitor) -> str:
         return visitor.visit_if_then_else_command(self)
 
-    def __init__(self, condition: Condition, commands0: Commands, commands1: Commands):
-        self.commands_true = commands0
-        self.commands_false = commands1
+    def __init__(self, condition: Condition, commands_true: Commands, commands_false: Commands):
+        self.commands_true = commands_true
+        self.commands_false = commands_false
         self.condition = condition
 
     def to_str_with_indent(self, indent=0) -> str:
