@@ -1,6 +1,7 @@
 from sly import Parser
 from lexer import CompilerLexer
-from structures.AST import *
+from structures.ast.AST import *
+from utils.AST_interpreter import ASTInterpreter
 
 
 class CompilerParser(Parser):
@@ -83,8 +84,8 @@ class CompilerParser(Parser):
         return WriteCommand(p.value)
 
     @_('value')
-    def expression(self, p) -> ExpressionHavingOnlyOneValue:
-        return ExpressionHavingOnlyOneValue(p.value)
+    def expression(self, p) -> ExpressionHavingOneValue:
+        return ExpressionHavingOneValue(p.value)
 
     @_('value PLUS value',
        'value MINUS value',
@@ -128,10 +129,16 @@ if __name__ == '__main__':
     lexer = CompilerLexer()
     parser = CompilerParser()
 
+    # with open('test2', 'r') as file:
+    #     data = file.read()
+    #     result = parser.parse(lexer.tokenize(data))
+    #     print(result)
+
     with open('test2', 'r') as file:
         data = file.read()
         result = parser.parse(lexer.tokenize(data))
         print(result)
+        interpreter = ASTInterpreter(result)
 
     # while True:
     #     try:
