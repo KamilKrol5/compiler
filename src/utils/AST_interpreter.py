@@ -48,36 +48,36 @@ class ASTInterpreter(Visitor):
     def visit_array_element_by_variable_identifier(
             self,
             array_element_by_variable_identifier: 'ArrayElementByVariableIdentifier'
-    ) -> str:
+    ) -> None:
         pass
 
     def visit_array_element_by_int_number_identifier(
             self,
             array_element_by_int_number_identifier: 'ArrayElementByIntNumberIdentifier'
-    ) -> str:
+    ) -> None:
         pass
 
-    def visit_variable_identifier(self, variable_identifier: 'VariableIdentifier') -> str:
+    def visit_variable_identifier(self, variable_identifier: 'VariableIdentifier') -> None:
         pass
 
-    def visit_number_declaration(self, number_declaration: 'NumberDeclaration') -> str:
+    def visit_number_declaration(self, number_declaration: 'NumberDeclaration') -> None:
         pass
 
-    def visit_array_declaration(self, array_declaration: 'ArrayDeclaration') -> str:
+    def visit_array_declaration(self, array_declaration: 'ArrayDeclaration') -> None:
         pass
 
-    def visit_declarations(self, declarations: 'Declarations') -> str:
+    def visit_declarations(self, declarations: 'Declarations') -> None:
         pass
 
-    def visit_expression_having_one_value(self, expression: 'ExpressionHavingOneValue') -> str:
+    def visit_expression_having_one_value(self, expression: 'ExpressionHavingOneValue'):
         self.generated_code.append(
             generate_code_for_expression(expression, self.declared_variables, self.declared_arrays))
 
-    def visit_expression_having_two_values(self, expression: 'ExpressionHavingTwoValues') -> str:
+    def visit_expression_having_two_values(self, expression: 'ExpressionHavingTwoValues'):
         self.generated_code.append(
             generate_code_for_expression(expression, self.declared_variables, self.declared_arrays))
 
-    def visit_two_value_condition(self, condition: 'TwoValueCondition') -> str:
+    def visit_two_value_condition(self, condition: 'TwoValueCondition'):
         # TODO change it
         self.generated_code.append(
             generate_condition(condition, self.declared_variables, self.declared_arrays))
