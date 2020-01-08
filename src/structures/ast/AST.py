@@ -26,8 +26,8 @@ class Identifier(ABC, ASTElement, PrintableWithIndent):
 
 
 class IntNumberValue(Value):
-    def accept(self, visitor: Visitor) -> str:
-        return visitor.visit_int_number_value(self)
+    def accept(self, visitor: Visitor) -> None:
+        visitor.visit_int_number_value(self)
 
     def __init__(self, value: int):
         self.value = value
@@ -37,8 +37,8 @@ class IntNumberValue(Value):
 
 
 class IdentifierValue(Value):
-    def accept(self, visitor: Visitor) -> str:
-        return visitor.visit_identifier_value(self)
+    def accept(self, visitor: Visitor) -> None:
+        visitor.visit_identifier_value(self)
 
     def __init__(self, identifier: Identifier):
         self.identifier = identifier
@@ -50,8 +50,8 @@ class IdentifierValue(Value):
 
 
 class VariableIdentifier(Identifier):
-    def accept(self, visitor: Visitor) -> str:
-        return visitor.visit_variable_identifier(self)
+    def accept(self, visitor: Visitor) -> None:
+        visitor.visit_variable_identifier(self)
 
     def __init__(self, identifier_name: str):
         self.identifier_name = identifier_name
@@ -61,8 +61,8 @@ class VariableIdentifier(Identifier):
 
 
 class ArrayElementByVariableIdentifier(Identifier):
-    def accept(self, visitor: Visitor) -> str:
-        return visitor.visit_array_element_by_variable_identifier(self)
+    def accept(self, visitor: Visitor) -> None:
+        visitor.visit_array_element_by_variable_identifier(self)
 
     def __init__(self, array_identifier: str, index_identifier: str):
         self.array_identifier = array_identifier
@@ -74,8 +74,8 @@ class ArrayElementByVariableIdentifier(Identifier):
 
 
 class ArrayElementByIntNumberIdentifier(Identifier):
-    def accept(self, visitor: Visitor) -> str:
-        return visitor.visit_array_element_by_int_number_identifier(self)
+    def accept(self, visitor: Visitor) -> None:
+        visitor.visit_array_element_by_int_number_identifier(self)
 
     def __init__(self, array_identifier: str, index_value: IntNumberValue):
         self.array_identifier = array_identifier
@@ -93,8 +93,8 @@ class Declaration(ABC, ASTElement, PrintableWithIndent):
 
 
 class NumberDeclaration(Declaration):
-    def accept(self, visitor: Visitor) -> str:
-        return visitor.visit_number_declaration(self)
+    def accept(self, visitor: Visitor) -> None:
+        visitor.visit_number_declaration(self)
 
     def __init__(self, identifier: str):
         self.identifier = identifier
@@ -104,8 +104,8 @@ class NumberDeclaration(Declaration):
 
 
 class ArrayDeclaration(Declaration):
-    def accept(self, visitor: Visitor) -> str:
-        return visitor.visit_array_declaration(self)
+    def accept(self, visitor: Visitor) -> None:
+        visitor.visit_array_declaration(self)
 
     def __init__(self, identifier: str, begin_index: IntNumberValue, end_index: IntNumberValue):
         self.end_index = end_index
@@ -121,8 +121,8 @@ class ArrayDeclaration(Declaration):
 
 
 class Declarations(ASTElement, PrintableWithIndent):
-    def accept(self, visitor: Visitor) -> str:
-        return visitor.visit_declarations(self)
+    def accept(self, visitor: Visitor) -> None:
+        visitor.visit_declarations(self)
 
     def __init__(self, declarations: List[Declaration]):
         self.declarations = declarations
@@ -149,8 +149,8 @@ class Condition(ABC, ASTElement, PrintableWithIndent):
 
 
 class ExpressionHavingOneValue(Expression):
-    def accept(self, visitor: Visitor) -> str:
-        return visitor.visit_expression_having_one_value(self)
+    def accept(self, visitor: Visitor) -> None:
+        visitor.visit_expression_having_one_value(self)
 
     def __init__(self, value: Value):
         self.value = value
@@ -164,8 +164,8 @@ class ExpressionHavingOneValue(Expression):
 
 
 class ExpressionHavingTwoValues(Expression):
-    def accept(self, visitor: Visitor) -> str:
-        return visitor.visit_expression_having_two_values(self)
+    def accept(self, visitor: Visitor) -> None:
+        visitor.visit_expression_having_two_values(self)
 
     def __init__(self, value1: Value, value2: Value, operation: str):
         self.operation = operation
@@ -184,8 +184,8 @@ class ExpressionHavingTwoValues(Expression):
 
 class TwoValueCondition(Condition):
 
-    def accept(self, visitor: Visitor) -> str:
-        return visitor.visit_two_value_condition(self)
+    def accept(self, visitor: Visitor) -> None:
+        visitor.visit_two_value_condition(self)
 
     def __init__(self, value1: Value, value2: Value, compare_operation: str):
         self.compare_operation = compare_operation
@@ -200,8 +200,8 @@ class TwoValueCondition(Condition):
 
 
 class Commands(ASTElement, PrintableWithIndent):
-    def accept(self, visitor: Visitor) -> str:
-        return visitor.visit_commands(self)
+    def accept(self, visitor: Visitor) -> None:
+        visitor.visit_commands(self)
 
     def __init__(self, commands: List[Command]):
         self.commands = commands
@@ -215,8 +215,8 @@ class Commands(ASTElement, PrintableWithIndent):
 
 
 class AssignmentCommand(Command):
-    def accept(self, visitor: Visitor) -> str:
-        return visitor.visit_assignment_command(self)
+    def accept(self, visitor: Visitor) -> None:
+        visitor.visit_assignment_command(self)
 
     def __init__(self, identifier: Identifier, expression: Expression):
         self.expression = expression
@@ -230,8 +230,8 @@ class AssignmentCommand(Command):
 
 
 class IfThenElseCommand(Command):
-    def accept(self, visitor: Visitor) -> str:
-        return visitor.visit_if_then_else_command(self)
+    def accept(self, visitor: Visitor) -> None:
+        visitor.visit_if_then_else_command(self)
 
     def __init__(self, condition: Condition, commands_true: Commands, commands_false: Commands):
         self.commands_true = commands_true
@@ -249,8 +249,8 @@ class IfThenElseCommand(Command):
 
 
 class IfThenCommand(Command):
-    def accept(self, visitor: Visitor) -> str:
-        return visitor.visit_if_then_command(self)
+    def accept(self, visitor: Visitor) -> None:
+        visitor.visit_if_then_command(self)
 
     def __init__(self, condition: Condition, commands: Commands):
         self.commands_true = commands
@@ -266,8 +266,8 @@ class IfThenCommand(Command):
 
 class WhileDoCommand(Command):
 
-    def accept(self, visitor: Visitor) -> str:
-        return visitor.visit_while_do_command(self)
+    def accept(self, visitor: Visitor) -> None:
+        visitor.visit_while_do_command(self)
 
     def __init__(self, condition: Condition, commands: Commands):
         self.commands = commands
@@ -283,8 +283,8 @@ class WhileDoCommand(Command):
 
 class DoWhileCommand(Command):
 
-    def accept(self, visitor: Visitor) -> str:
-        return visitor.visit_do_while_command(self)
+    def accept(self, visitor: Visitor) -> None:
+        visitor.visit_do_while_command(self)
 
     def __init__(self, condition: Condition, commands: Commands):
         self.commands = commands
@@ -300,8 +300,8 @@ class DoWhileCommand(Command):
 
 class ForCommand(Command):
 
-    def accept(self, visitor: Visitor) -> str:
-        return visitor.visit_for_command(self)
+    def accept(self, visitor: Visitor) -> None:
+        visitor.visit_for_command(self)
 
     def __init__(self, iterator_identifier: str, start: Value, end: Value, is_down_to: bool, commands: Commands):
         self.iterator_identifier = iterator_identifier
@@ -322,8 +322,8 @@ class ForCommand(Command):
 
 
 class ReadCommand(Command):
-    def accept(self, visitor: Visitor) -> str:
-        return visitor.visit_read_command(self)
+    def accept(self, visitor: Visitor) -> None:
+        visitor.visit_read_command(self)
 
     def __init__(self, identifier: Identifier):
         self.identifier = identifier
@@ -334,8 +334,8 @@ class ReadCommand(Command):
 
 
 class WriteCommand(Command):
-    def accept(self, visitor: Visitor) -> str:
-        return visitor.visit_write_command(self)
+    def accept(self, visitor: Visitor) -> None:
+        visitor.visit_write_command(self)
 
     def __init__(self, value: Value):
         self.value = value

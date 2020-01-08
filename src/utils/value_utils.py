@@ -1,7 +1,8 @@
 from typing import Tuple, Dict
 from structures.ast.AST import Value, Identifier, ArrayDeclaration, VariableIdentifier, IntNumberValue, IdentifierValue, \
     ArrayElementByIntNumberIdentifier, ArrayElementByVariableIdentifier
-from utils.arrays_utils import generate_code_for_loading_array_element_by_variable, compute_real_register_of_array_element
+from utils.arrays_utils import generate_code_for_loading_array_element_by_variable, \
+    compute_real_register_of_array_element
 from utils.math_utils import generate_number
 
 ''' Generates code for loading numeric value of Value object to the register 0 (p0).
