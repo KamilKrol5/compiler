@@ -7,6 +7,9 @@ from utils.command_utils import write_code_for_if_then_command, write_code_for_i
 from utils.expression_utils import generate_code_for_expression
 from utils.label_provider import LabelProvider
 from utils.loop_utils import generate_condition
+from utils.arrays_utils import generate_code_for_computing_index_of_array_element_by_variable, \
+    compute_real_register_of_array_element
+from structures.ast.identifier_register_representation import *
 
 
 class ASTInterpreter(Visitor):
@@ -45,20 +48,35 @@ class ASTInterpreter(Visitor):
     def visit_identifier_value(self, identifier_value: 'IdentifierValue') -> int:
         pass
 
+    ''' Returns the real register associated with given identifier '''
+
     def visit_array_element_by_variable_identifier(
             self,
             array_element_by_variable_identifier: 'ArrayElementByVariableIdentifier'
-    ) -> None:
-        pass
+    ) -> AbstractIdentifierAccess:
+        return DynamicIdentifierAccess(
+            generate_code_for_computing_index_of_array_element_by_variable(
+                array_element_by_variable_identifier, self.declared_variables, self.declared_arrays
+            ))
+
+    ''' Returns the real register associated with given identifier '''
 
     def visit_array_element_by_int_number_identifier(
             self,
             array_element_by_int_number_identifier: 'ArrayElementByIntNumberIdentifier'
-    ) -> None:
-        pass
+    ) -> AbstractIdentifierAccess:
+        return StaticIdentifierAccess(
+            compute_real_register_of_array_element(
+                self.declared_arrays, array_element_by_int_number_identifier)
+        )
 
-    def visit_variable_identifier(self, variable_identifier: 'VariableIdentifier') -> None:
-        pass
+    ''' Returns the real register associated with given identifier '''
+
+    def visit_variable_identifier(
+            self, variable_identifier: 'VariableIdentifier') -> AbstractIdentifierAccess:
+        return StaticIdentifierAccess(
+            self.declared_variables[variable_identifier.identifier_name]
+        )
 
     def visit_number_declaration(self, number_declaration: 'NumberDeclaration') -> None:
         pass

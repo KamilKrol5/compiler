@@ -1,6 +1,6 @@
 from utils.AST_interpreter import *
 
-''' Generates code for if then command.
+''' Writes code for if then command in visitor.
     All its sub-commands are generated too.'''
 
 
@@ -51,7 +51,7 @@ def write_code_for_if_then_command(
             ValueError('Unknown instance of Condition has occurred. Only TwoValueCondition is supported in this method')
 
 
-''' Generates code for if then else command.
+''' Writes code for if then else command in visitor.
     All its sub-commands are generated too.'''
 
 
@@ -117,7 +117,7 @@ def write_code_for_if_then_else_command(
             ValueError('Unknown instance of Condition has occurred. Only TwoValueCondition is supported in this method')
 
 
-''' Generates code for an assignment command.
+''' Writes code for an assignment command in visitor.
     Value of expression (which is assignment's field) is stored in register related to
     given identifier (which is also assignment's field).'''
 
@@ -126,5 +126,8 @@ def write_code_for_assignment_command(
         command: AssignmentCommand,
         visitor: 'ASTInterpreter'
 ) -> None:
+    register: AbstractIdentifierAccess = command.identifier.accept(visitor)
+    visitor.generated_code.append(register.prepare_register())
     command.expression.accept(visitor)
-    visitor
+    visitor.generated_code.append(register.store())
+

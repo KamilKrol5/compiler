@@ -1,33 +1,35 @@
 from abc import abstractmethod, ABC
 
 
-class AbstractIdentifierRegisterRepresentation(ABC):
+class AbstractIdentifierAccess(ABC):
     @abstractmethod
-    def is_numeric(self) -> bool:
+    def store(self):
         pass
 
     @abstractmethod
-    def get_register(self):
+    def prepare_register(self):
         pass
 
 
-class IdentifierRegisterRepresentation(AbstractIdentifierRegisterRepresentation):
+class StaticIdentifierAccess(AbstractIdentifierAccess):
+
     def __init__(self, value: int):
         self.value = value
 
-    def get_register(self) -> int:
-        return self.value
+    def store(self) -> str:
+        return f'STORE {self.value}\n'
 
-    def is_numeric(self) -> bool:
-        return True
+    def prepare_register(self) -> str:
+        return ""
 
 
-class IdentifierRegisterRepresentation(AbstractIdentifierRegisterRepresentation):
+class DynamicIdentifierAccess(AbstractIdentifierAccess):
+
     def __init__(self, generating_str: str):
         self.generating_str = generating_str
 
-    def get_register(self) -> str:
-        return self.generating_str
+    def store(self) -> str:
+        return "storei 9"
 
-    def is_numeric(self) -> bool:
-        return False
+    def prepare_register(self):
+        return self.generating_str + "STORE 9\n"
