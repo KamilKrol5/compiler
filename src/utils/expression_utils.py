@@ -8,6 +8,7 @@ from utils.value_utils import generate_code_for_loading_value
     Registers used: 0-7'''
 
 
+# TODO move it
 def generate_code_for_expression(
         expression: Expression,
         declared_variables: Dict[str, int],
