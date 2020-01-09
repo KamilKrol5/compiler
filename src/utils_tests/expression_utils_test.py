@@ -10,9 +10,10 @@ decl_arrays = {
     'arr': (120, 135, ArrayDeclaration('arr', IntNumberValue(-20), IntNumberValue(15))),
     'brr': (256, 266, ArrayDeclaration('brr', IntNumberValue(-5), IntNumberValue(5)))}
 
-interpreter = ASTInterpreter(Program(Declarations([]), Commands([])))
-interpreter.declared_variables = decl_vars
-interpreter.declared_arrays = decl_arrays
+program = Program(Declarations([]), Commands([]))
+interpreter = ASTInterpreter(program)
+interpreter.declared_variables.update(decl_vars)
+interpreter.declared_arrays.update(decl_arrays)
 
 
 @expected(111, 2, 555)
@@ -102,14 +103,70 @@ def test_sub():
     return code
 
 
-if __name__ == '__main__':
-    tests = [test_single_val_expr, test_add, test_sub]
+@expected(-120, -2220, 1110, -42, 42, 42, -42)
+def test_mul():
+    code: str = generate_code_for_expression(
+        ExpressionHavingTwoValues(
+            IdentifierValue(VariableIdentifier('d')),
+            IntNumberValue(-60),
+            'TIMES'
+        ), visitor=interpreter
+    ) + 'PUT\n'
+    code = code + generate_code_for_expression(
+        ExpressionHavingTwoValues(
+            IntNumberValue(-4),
+            IdentifierValue(VariableIdentifier('c')),
+            'TIMES'
+        ), visitor=interpreter
+    ) + 'PUT\n'
+    code = code + generate_code_for_expression(
+        ExpressionHavingTwoValues(
+            IdentifierValue(VariableIdentifier('d')),
+            IdentifierValue(VariableIdentifier('c')),
+            'TIMES'
+        ), visitor=interpreter
+    ) + 'PUT\n'
+    code = code + generate_code_for_expression(
+        ExpressionHavingTwoValues(
+            IntNumberValue(6),
+            IntNumberValue(-7),
+            'TIMES'
+        ), visitor=interpreter
+    ) + 'PUT\n'
+    code = code + generate_code_for_expression(
+        ExpressionHavingTwoValues(
+            IntNumberValue(-6),
+            IntNumberValue(-7),
+            'TIMES'
+        ), visitor=interpreter
+    ) + 'PUT\n'
+    code = code + generate_code_for_expression(
+        ExpressionHavingTwoValues(
+            IntNumberValue(6),
+            IntNumberValue(7),
+            'TIMES'
+        ), visitor=interpreter
+    ) + 'PUT\n'
+    code = code + generate_code_for_expression(
+        ExpressionHavingTwoValues(
+            IntNumberValue(-6),
+            IntNumberValue(7),
+            'TIMES'
+        ), visitor=interpreter
+    ) + 'PUT\n'
 
-    code_all = generate_number(555, 32) + generate_number(2, 64) + \
-        generate_number(-2000, 125) + generate_number(-666, 142)
+    return code
+
+
+if __name__ == '__main__':
+    tests = [test_single_val_expr, test_add, test_sub, test_mul]
+
+    interpreter.generated_code.append(generate_number(555, 32) + generate_number(2, 64) + \
+                                      generate_number(-2000, 125) + generate_number(-666, 142))
 
     expected = flatten(t.expected for t in tests)
-    code_all = code_all + ''.join([t() for t in tests])
+    interpreter.generated_code.append(''.join([t() for t in tests]))
+    code_all = program.accept(interpreter)
     returned: List[int] = get_numbers_from_run_code(code_all, 'expr_test.txt', 'exe_expr_test.txt')
 
     print('unmatched: (result number, (expected, returned))')
