@@ -136,8 +136,8 @@ if __name__ == '__main__':
     #     data = file.read()
     #     result = parser.parse(lexer.tokenize(data))
     #     print(result)
-
-    with open('test3.imp', 'r') as file:
+    src_file = 'test_mul.imp'
+    with open(src_file, 'r') as file:
         data = file.read()
         # print(list(lexer.tokenize(data)))
         result: Program = parser.parse(lexer.tokenize(data))
@@ -145,8 +145,8 @@ if __name__ == '__main__':
         interpreter = ASTInterpreter(result)
         code = result.accept(visitor=interpreter)
 
-        write_to_file("test3.out", code)
-        convert_labels_to_registers("test3.out")
+        write_to_file(f"{src_file}.out", code)
+        convert_labels_to_registers(f"{src_file}.out")
     # while True:
     #     try:
     #         text = input('calc > ')

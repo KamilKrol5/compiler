@@ -1,6 +1,7 @@
 from structures.ast.AST import Expression, ArrayDeclaration
 from utils.math_operations_code_generator import MathOperationsCodeGenerator, Dict, Tuple
 from utils.value_utils import generate_code_for_loading_value
+from utils.AST_interpreter import *
 
 
 ''' Generates code for computing value of an expression.
@@ -11,12 +12,11 @@ from utils.value_utils import generate_code_for_loading_value
 # TODO move it
 def generate_code_for_expression(
         expression: Expression,
-        declared_variables: Dict[str, int],
-        declared_arrays: Dict[str, Tuple[int, int, ArrayDeclaration]]
+        visitor: 'ASTInterpreter'
 ) -> str:
-    math_code_generator = MathOperationsCodeGenerator(declared_variables, declared_arrays)
+    math_code_generator = MathOperationsCodeGenerator(visitor)
     if expression.number_of_values() == 1:
-        return generate_code_for_loading_value(expression.value, declared_variables, declared_arrays)
+        return generate_code_for_loading_value(expression.value, visitor.declared_variables, visitor.declared_arrays)
     elif expression.number_of_values() == 2:
         if expression.operation not in math_code_generator.expressions.keys():
             raise ValueError('Unknown operator. It is not present in expressions dictionary in expression_utils.')

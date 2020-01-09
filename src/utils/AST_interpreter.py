@@ -10,18 +10,26 @@ from utils.loop_utils import generate_condition
 from utils.arrays_utils import generate_code_for_computing_index_of_array_element_by_variable, \
     compute_real_register_of_array_element
 from structures.ast.identifier_register_representation import *
+from utils.math_utils import generate_number
 
 
 class ASTInterpreter(Visitor):
     VARIABLES_START_REGISTER = 100
+    ONE_VAR_NAME = '@one'
+    MINUS_ONE_VAR_NAME = '@minus_one'
+    ZERO_VAR_NAME = '@zero'
 
     def __init__(self, program: Program):
         self.program: Program = program
+        self.program.declarations.declarations.extend([NumberDeclaration(self.ONE_VAR_NAME),
+                                                       NumberDeclaration(self.MINUS_ONE_VAR_NAME),
+                                                       NumberDeclaration(self.ZERO_VAR_NAME)])
         self.declared_variables: Dict[str, int] = dict()
         self.declared_arrays: Dict[str, Tuple[int, int, ArrayDeclaration]] = dict()
         self.generated_code: List[str] = ['## Program\n']
         self.label_provider: LabelProvider = LabelProvider('%label_')
         self._assign_registers_to_variables()
+        self.generate_one_and_minus_one()
 
     def _assign_registers_to_variables(self):
         # assign registers to variables
@@ -41,6 +49,12 @@ class ASTInterpreter(Visitor):
 
             self.VARIABLES_START_REGISTER = self.VARIABLES_START_REGISTER + 1
         print(self.VARIABLES_START_REGISTER)
+
+    def generate_one_and_minus_one(self):
+        self.generated_code.append(
+            generate_number(1, destination_register=self.declared_variables[self.ONE_VAR_NAME]) +
+            generate_number(0, destination_register=self.declared_variables[self.ZERO_VAR_NAME]) +
+            generate_number(-1, destination_register=self.declared_variables[self.MINUS_ONE_VAR_NAME]))
 
     def visit_int_number_value(self, int_number_value: 'IntNumberValue') -> int:
         pass
@@ -89,11 +103,11 @@ class ASTInterpreter(Visitor):
 
     def visit_expression_having_one_value(self, expression: 'ExpressionHavingOneValue'):
         self.generated_code.append(
-            generate_code_for_expression(expression, self.declared_variables, self.declared_arrays))
+            generate_code_for_expression(expression, self))
 
     def visit_expression_having_two_values(self, expression: 'ExpressionHavingTwoValues'):
         self.generated_code.append(
-            generate_code_for_expression(expression, self.declared_variables, self.declared_arrays))
+            generate_code_for_expression(expression, self))
 
     def visit_two_value_condition(self, condition: 'TwoValueCondition'):
         # TODO change it
