@@ -330,6 +330,7 @@ def test_if_then_else_leq_on_false_geq_on_true() -> Command:
     return cond
 
 
+# Expected: 0, 0
 def test_while_do_zero_iterations() -> Tuple[Command, Command, Command]:
     loop = WhileDoCommand(condition=TwoValueCondition(
         IdentifierValue(VariableIdentifier('i')),
@@ -347,6 +348,7 @@ def test_while_do_zero_iterations() -> Tuple[Command, Command, Command]:
     return write, loop, write
 
 
+# Expected: 0, 50
 def test_while_do_50_iterations() -> Tuple[Command, Command, Command]:
     loop = WhileDoCommand(condition=TwoValueCondition(
         IdentifierValue(VariableIdentifier('i')),
@@ -363,6 +365,85 @@ def test_while_do_50_iterations() -> Tuple[Command, Command, Command]:
     return write, loop, write
 
 
+# Expected: 555, 1000, 1000, 1000, 555, 555, 6, -80
+def test_while_do_nested() -> Tuple[Command, Command, Command, Command]:
+    zero = AssignmentCommand(
+        VariableIdentifier('i'),
+        ExpressionHavingOneValue(IntNumberValue(0)))
+    loop = WhileDoCommand(condition=TwoValueCondition(
+        IdentifierValue(VariableIdentifier('i')),
+        IntNumberValue(6),
+        'NEQ'),  # i != 6 (i=0)
+        commands=Commands([  # i = i PLUS 1
+            WriteCommand(IdentifierValue(VariableIdentifier('c'))),
+            AssignmentCommand(
+                VariableIdentifier('i'),
+                ExpressionHavingTwoValues(IdentifierValue(VariableIdentifier('i')), IntNumberValue(1), 'PLUS')),
+            WhileDoCommand(condition=TwoValueCondition(  # 3 times
+                IdentifierValue(VariableIdentifier('i')),
+                IntNumberValue(4),
+                'LE'),
+                commands=Commands([
+                    WriteCommand(IdentifierValue(ArrayElementByVariableIdentifier('brr', 'd'))),
+                    AssignmentCommand(  # array_var_two = array_var_two - array_var_two
+                        VariableIdentifier('array_var_two'),
+                        ExpressionHavingTwoValues(
+                            IdentifierValue(VariableIdentifier('array_var_two')),
+                            IdentifierValue(VariableIdentifier('array_var_two')), 'PLUS')),
+                    AssignmentCommand(
+                        VariableIdentifier('i'),
+                        ExpressionHavingTwoValues(IdentifierValue(VariableIdentifier('i')), IntNumberValue(1), 'PLUS')),
+                ]))
+
+        ]))
+    write = WriteCommand(IdentifierValue(VariableIdentifier('i')))
+    write2 = WriteCommand(IdentifierValue(VariableIdentifier('array_var_two')))
+    # loop.accept(interpreter)
+    # write.accept(interpreter)
+    return zero, loop, write, write2
+
+
+# Expected: 50
+def test_do_while_50_iterations() -> Tuple[Command, Command, Command]:
+    zero = AssignmentCommand(
+        VariableIdentifier('i'),
+        ExpressionHavingOneValue(IntNumberValue(0)))
+    loop = DoWhileCommand(condition=TwoValueCondition(
+        IdentifierValue(VariableIdentifier('i')),
+        IdentifierValue(VariableIdentifier('array_var_one')),
+        'LE'),  # i <= 50 (i=0)
+        commands=Commands([  # i = i PLUS 1
+            AssignmentCommand(
+                VariableIdentifier('i'),
+                ExpressionHavingTwoValues(IdentifierValue(VariableIdentifier('i')), IntNumberValue(1), 'PLUS'))
+        ]))
+    write = WriteCommand(IdentifierValue(VariableIdentifier('i')))
+    # loop.accept(interpreter)
+    # write.accept(interpreter)
+    return zero, loop, write
+
+
+# Expected: 0, 1
+def test_do_while_zero_iterations() -> Tuple[Command, Command, Command, Command]:
+    zero = AssignmentCommand(
+        VariableIdentifier('i'),
+        ExpressionHavingOneValue(IntNumberValue(0)))
+    loop = DoWhileCommand(condition=TwoValueCondition(
+        IdentifierValue(VariableIdentifier('i')),
+        IntNumberValue(-10),
+        'LEQ'),  # i <= -10 (i=0)
+        commands=Commands([  # i = i PLUS 1
+            AssignmentCommand(
+                VariableIdentifier('i'),
+                ExpressionHavingTwoValues(IdentifierValue(VariableIdentifier('i')), IntNumberValue(1), 'PLUS'))
+        ]))
+    write = WriteCommand(IdentifierValue(VariableIdentifier('i')))
+    # write.accept(interpreter)
+    # loop.accept(interpreter)
+    # write.accept(interpreter)
+    return zero, write, loop, write
+
+
 if __name__ == '__main__':
     code_generating_constants: str = generate_number(555, 32) + generate_number(2, 64) + generate_number(-2000, 125) + \
         generate_number(-666, 142) + generate_number(1000, 263) + generate_number(50, 65) + generate_number(-10, 66) + \
@@ -370,7 +451,7 @@ if __name__ == '__main__':
     # c = 555, d = 2, arr[-15] = -2000, brr[2] =  brr[d] = 1000, array_var_one = 50, array_var_two = -10, i = 0
     interpreter.generated_code.append(code_generating_constants)
     program1 = Program(Declarations([]), Commands([
-            *test_while_do_zero_iterations(),
+            *test_do_while_zero_iterations()
     ]))
     code = interpreter.visit_program(program1)
     write_to_file('../label_converter/command_test.txt', code)
@@ -384,12 +465,14 @@ if __name__ == '__main__':
         test_if_then_else_le_on_false_ge_on_true(), test_if_then_else_le_on_true_ge_on_false(),
         test_if_then_else_leq_on_false_geq_on_true(), test_if_then_else_leq_on_true_geq_on_false(),
         test_if_then_else_leq_on_true_geq_on_true_with_equality(), *test_while_do_zero_iterations(),
-        *test_while_do_50_iterations()
+        *test_while_do_50_iterations(), *test_while_do_nested(), *test_do_while_50_iterations(),
+        *test_do_while_zero_iterations()
 
     ]))
     # 1, 1, <33>, 555, -2000, 2555, <22>, <11>, <111>, 33, 22, 33, 22, 11, 44, 1000, 555, -2000, 11, 1000,
     # <33>, 44, 555, 1000, -2000, 200, 300,  100, 200,  200, 300,  100, 200, 100, 200,
-    # 0, 0, 0, 50 (while do)
+    # 0, 0, 0, 50 (while do) 555, 1000, 1000, 1000, 555, 555, 6, -80 (while do nested),
+    # 50, 0, 1 (do while)
     code_all: str = interpreter.visit_program(program1)
     write_to_file('../label_converter/command_test_all.txt', code_all)
 

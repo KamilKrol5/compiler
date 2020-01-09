@@ -3,7 +3,7 @@ from typing import Dict, Tuple
 
 from utils.IO_utils import generate_code_for_write_command, generate_code_for_read_command
 from utils.command_utils import write_code_for_if_then_command, write_code_for_if_then_else_command, \
-    write_code_for_assignment_command, write_code_for_while_do_command
+    write_code_for_assignment_command, write_code_for_while_do_command, write_code_for_do_while_command
 from utils.expression_utils import generate_code_for_expression
 from utils.label_provider import LabelProvider
 from utils.loop_utils import generate_condition
@@ -117,7 +117,7 @@ class ASTInterpreter(Visitor):
         write_code_for_while_do_command(while_do_command, self)
 
     def visit_do_while_command(self, do_while_command: 'DoWhileCommand') -> None:
-        pass
+        write_code_for_do_while_command(do_while_command, self)
 
     def visit_for_command(self, for_command: 'ForCommand') -> None:
         pass
