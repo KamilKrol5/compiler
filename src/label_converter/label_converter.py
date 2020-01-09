@@ -1,7 +1,7 @@
 import re
 
 
-def convert_labels_to_registers(filename='filename.txt'):
+def convert_labels_to_registers(filename='filename.txt', output_filename='imp_executable'):
 
     labels_dest = dict()
     labels_to_replace = dict()
@@ -40,10 +40,10 @@ def convert_labels_to_registers(filename='filename.txt'):
         data = re.sub(r'^(##).*\n', '', data, flags=re.MULTILINE)
         print('________________________')
         #print(data)
-        with(open(f'label_converter_{filename}.out', 'w', newline='\n')) as file2:
+        with(open(output_filename, 'w', newline='\n')) as file2:
             file2.write(data)
 
 
 if __name__ == '__main__':
-    convert_labels_to_registers('command_test.txt')
-    convert_labels_to_registers('command_test_all.txt')
+    convert_labels_to_registers('command_test.txt', 'exe_command_test.txt')
+    convert_labels_to_registers('command_test_all.txt', 'exe_command_test_all.txt')

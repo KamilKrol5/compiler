@@ -48,7 +48,7 @@ class ASTInterpreter(Visitor):
                 self.VARIABLES_START_REGISTER = self.VARIABLES_START_REGISTER + array_length
 
             self.VARIABLES_START_REGISTER = self.VARIABLES_START_REGISTER + 1
-        print(self.VARIABLES_START_REGISTER)
+        print(f'Variables start register: {self.VARIABLES_START_REGISTER}')
 
     def generate_one_and_minus_one(self):
         self.generated_code.append(

@@ -1,4 +1,7 @@
+from pprint import pprint
+
 from utils.AST_interpreter import ASTInterpreter
+from utils.test_utils import run_code, expected, flatten
 from utils.utils import write_to_file
 from utils.math_utils import *
 from structures.ast.AST import *
@@ -15,30 +18,30 @@ interpreter.declared_variables = decl_vars
 interpreter.declared_arrays = decl_arrays
 
 
-# Expected 1
-def test_if_then_neq() -> Command:
+@expected(1)
+def test_if_then_neq() -> Tuple[Command]:
     cond = IfThenCommand(
         TwoValueCondition(IdentifierValue(VariableIdentifier('d')), IntNumberValue(555), 'NEQ'),
         Commands(commands=[
             WriteCommand(IntNumberValue(1))
         ]))
     # cond.accept(interpreter)
-    return cond
+    return cond,
 
 
-# Expected 1
-def test_if_then_eq() -> Command:
+@expected(1)
+def test_if_then_eq() -> Tuple[Command]:
     cond = IfThenCommand(
         TwoValueCondition(IdentifierValue(VariableIdentifier('c')), IntNumberValue(555), 'EQ'),
         Commands(commands=[
             WriteCommand(IntNumberValue(1))
         ]))
     # cond.accept(interpreter)
-    return cond
+    return cond,
 
 
-# Expected 33, 22, 11
-def test_if_then_le_ge_eq() -> Command:
+@expected(33, 22, 11)
+def test_if_then_le_ge_eq() -> Tuple[Command]:
     cond = IfThenCommand(
         TwoValueCondition(IdentifierValue(VariableIdentifier('d')), IntNumberValue(555), 'LE'),
         Commands(commands=[
@@ -58,11 +61,11 @@ def test_if_then_le_ge_eq() -> Command:
                     )]))
         ]))
     # cond.accept(interpreter)
-    return cond
+    return cond,
 
 
-# Expected 33, 22
-def test_if_then_leq_geq_neq() -> Command:
+@expected(33, 22)
+def test_if_then_leq_geq_neq() -> Tuple[Command]:
     cond = IfThenCommand(
         TwoValueCondition(IdentifierValue(VariableIdentifier('d')), IntNumberValue(555), 'LEQ'),
         Commands(commands=[
@@ -82,11 +85,11 @@ def test_if_then_leq_geq_neq() -> Command:
                     )]))
         ]))
     # cond.accept(interpreter)
-    return cond
+    return cond,
 
 
-# Expected <33>, 555, -2000, 2555, <22>, <11>, <111>
-def test_if_then_geq_ge_leq() -> Command:
+@expected(33, 555, -2000, 22, 11, 111)
+def test_if_then_geq_ge_leq() -> Tuple[Command]:
     cond = IfThenCommand(
         TwoValueCondition(IdentifierValue(VariableIdentifier('d')), IdentifierValue(VariableIdentifier('d')), 'GEQ'),
         Commands(commands=[
@@ -114,11 +117,11 @@ def test_if_then_geq_ge_leq() -> Command:
                     )]))
         ]))
     # cond.accept(interpreter)
-    return cond
+    return cond,
 
 
-# Expected 44, 555, 1000, -2000
-def test_if_then_else_neq_on_false() -> Command:
+@expected(44, 555, 1000, -2000)
+def test_if_then_else_neq_on_false() -> Tuple[Command]:
     cond = IfThenElseCommand(
         condition=TwoValueCondition(IdentifierValue(VariableIdentifier('d')), IdentifierValue(VariableIdentifier('d')),
                                     'NEQ'),
@@ -132,11 +135,11 @@ def test_if_then_else_neq_on_false() -> Command:
             WriteCommand(IdentifierValue(ArrayElementByIntNumberIdentifier('arr', IntNumberValue(-15)))),
         ]))
     # cond.accept(interpreter)
-    return cond
+    return cond,
 
 
-# Expected: <33>
-def test_if_then_else_neg_on_true() -> Command:
+@expected(33)
+def test_if_then_else_neg_on_true() -> Tuple[Command]:
     cond = IfThenElseCommand(
         condition=TwoValueCondition(IdentifierValue(VariableIdentifier('c')), IdentifierValue(VariableIdentifier('d')),
                                     'NEQ'),
@@ -150,11 +153,11 @@ def test_if_then_else_neg_on_true() -> Command:
             WriteCommand(IdentifierValue(ArrayElementByIntNumberIdentifier('arr', IntNumberValue(-15)))),
         ]))
     # cond.accept(interpreter)
-    return cond
+    return cond,
 
 
-# Expected: 44, 1000, 555, -2000
-def test_if_then_else_eq_on_false() -> Command:
+@expected(44, 1000, 555, -2000)
+def test_if_then_else_eq_on_false() -> Tuple[Command]:
     cond = IfThenElseCommand(
         condition=TwoValueCondition(IdentifierValue(ArrayElementByVariableIdentifier('brr', 'd')),  # 1000 == 2
                                     IdentifierValue(VariableIdentifier('d')),
@@ -169,11 +172,11 @@ def test_if_then_else_eq_on_false() -> Command:
             WriteCommand(IdentifierValue(ArrayElementByIntNumberIdentifier('arr', IntNumberValue(-15)))),
         ]))
     # cond.accept(interpreter)
-    return cond
+    return cond,
 
 
-# Expected: 11, 1000
-def test_if_then_else_eq_on_true() -> Command:
+@expected(11, 1000)
+def test_if_then_else_eq_on_true() -> Tuple[Command]:
     cond = IfThenElseCommand(
         condition=TwoValueCondition(IdentifierValue(ArrayElementByVariableIdentifier('brr', 'd')),  # 1000 == 1000
                                     IdentifierValue(ArrayElementByVariableIdentifier('brr', 'd')),
@@ -186,11 +189,11 @@ def test_if_then_else_eq_on_true() -> Command:
             WriteCommand(IntNumberValue(-44))
         ]))
     # cond.accept(interpreter)
-    return cond
+    return cond,
 
 
-# Expected: 100, 200
-def test_if_then_else_le_on_true_ge_on_false() -> Command:
+@expected(100, 200)
+def test_if_then_else_le_on_true_ge_on_false() -> Tuple[Command]:
     cond = IfThenElseCommand(
         condition=TwoValueCondition(IdentifierValue(VariableIdentifier('d')),  # 2 < 1000
                                     IdentifierValue(ArrayElementByVariableIdentifier('brr', 'd')),
@@ -214,11 +217,11 @@ def test_if_then_else_le_on_true_ge_on_false() -> Command:
             WriteCommand(IntNumberValue(-44))
         ]))
     # cond.accept(interpreter)
-    return cond
+    return cond,
 
 
-# Expected: 200, 300
-def test_if_then_else_le_on_false_ge_on_true() -> Command:
+@expected(200, 300)
+def test_if_then_else_le_on_false_ge_on_true() -> Tuple[Command]:
     cond = IfThenElseCommand(
         condition=TwoValueCondition(IdentifierValue(VariableIdentifier('d')),  # 2 < -2000
                                     IdentifierValue(ArrayElementByIntNumberIdentifier('arr', IntNumberValue(-15))),
@@ -242,11 +245,11 @@ def test_if_then_else_le_on_false_ge_on_true() -> Command:
                 ]))
         ]))
     # cond.accept(interpreter)
-    return cond
+    return cond,
 
 
-# Expected: 100, 200
-def test_if_then_else_leq_on_true_geq_on_false() -> Command:
+@expected(100, 200)
+def test_if_then_else_leq_on_true_geq_on_false() -> Tuple[Command]:
     cond = IfThenElseCommand(
         condition=TwoValueCondition(IdentifierValue(VariableIdentifier('d')),  # 2 <= 1000
                                     IdentifierValue(ArrayElementByVariableIdentifier('brr', 'd')),
@@ -270,11 +273,11 @@ def test_if_then_else_leq_on_true_geq_on_false() -> Command:
             WriteCommand(IntNumberValue(-44))
         ]))
     # cond.accept(interpreter)
-    return cond
+    return cond,
 
 
-# Expected: 100, 200
-def test_if_then_else_leq_on_true_geq_on_true_with_equality() -> Command:
+@expected(100, 200)
+def test_if_then_else_leq_on_true_geq_on_true_with_equality() -> Tuple[Command]:
     cond = IfThenElseCommand(
         condition=TwoValueCondition(  # 1000 <= 1000
             IdentifierValue(ArrayElementByVariableIdentifier('brr', 'd')),
@@ -299,11 +302,11 @@ def test_if_then_else_leq_on_true_geq_on_true_with_equality() -> Command:
             WriteCommand(IntNumberValue(-44))
         ]))
     # cond.accept(interpreter)
-    return cond
+    return cond,
 
 
-# Expected: 200, 300
-def test_if_then_else_leq_on_false_geq_on_true() -> Command:
+@expected(200, 300)
+def test_if_then_else_leq_on_false_geq_on_true() -> Tuple[Command]:
     cond = IfThenElseCommand(
         condition=TwoValueCondition(IdentifierValue(VariableIdentifier('d')),  # 2 <= -2000
                                     IdentifierValue(ArrayElementByIntNumberIdentifier('arr', IntNumberValue(-15))),
@@ -327,10 +330,10 @@ def test_if_then_else_leq_on_false_geq_on_true() -> Command:
                 ]))
         ]))
     # cond.accept(interpreter)
-    return cond
+    return cond,
 
 
-# Expected: 0, 0
+@expected(0, 0)
 def test_while_do_zero_iterations() -> Tuple[Command, Command, Command]:
     loop = WhileDoCommand(condition=TwoValueCondition(
         IdentifierValue(VariableIdentifier('i')),
@@ -348,7 +351,7 @@ def test_while_do_zero_iterations() -> Tuple[Command, Command, Command]:
     return write, loop, write
 
 
-# Expected: 0, 50
+@expected(0, 50)
 def test_while_do_50_iterations() -> Tuple[Command, Command, Command]:
     loop = WhileDoCommand(condition=TwoValueCondition(
         IdentifierValue(VariableIdentifier('i')),
@@ -365,7 +368,7 @@ def test_while_do_50_iterations() -> Tuple[Command, Command, Command]:
     return write, loop, write
 
 
-# Expected: 555, 1000, 1000, 1000, 555, 555, 6, -80
+@expected(555, 1000, 1000, 1000, 555, 555, 6, -80)
 def test_while_do_nested() -> Tuple[Command, Command, Command, Command]:
     zero = AssignmentCommand(
         VariableIdentifier('i'),
@@ -403,7 +406,7 @@ def test_while_do_nested() -> Tuple[Command, Command, Command, Command]:
     return zero, loop, write, write2
 
 
-# Expected: 50
+@expected(50)
 def test_do_while_50_iterations() -> Tuple[Command, Command, Command]:
     zero = AssignmentCommand(
         VariableIdentifier('i'),
@@ -423,7 +426,7 @@ def test_do_while_50_iterations() -> Tuple[Command, Command, Command]:
     return zero, loop, write
 
 
-# Expected: 0, 1
+@expected(0, 1)
 def test_do_while_zero_iterations() -> Tuple[Command, Command, Command, Command]:
     zero = AssignmentCommand(
         VariableIdentifier('i'),
@@ -446,38 +449,45 @@ def test_do_while_zero_iterations() -> Tuple[Command, Command, Command, Command]
 
 if __name__ == '__main__':
     code_generating_constants: str = generate_number(555, 32) + generate_number(2, 64) + generate_number(-2000, 125) + \
-        generate_number(-666, 142) + generate_number(1000, 263) + generate_number(50, 65) + generate_number(-10, 66) + \
-        generate_number(0, 67)
+                                     generate_number(-666, 142) + generate_number(1000, 263) + generate_number(50,65) +\
+                                     generate_number(-10, 66) + \
+                                     generate_number(0, 67)
     # c = 555, d = 2, arr[-15] = -2000, brr[2] =  brr[d] = 1000, array_var_one = 50, array_var_two = -10, i = 0
     interpreter.generated_code.append(code_generating_constants)
     program1 = Program(Declarations([]), Commands([
-            *test_do_while_zero_iterations()
+        *test_do_while_zero_iterations()
     ]))
     code = interpreter.visit_program(program1)
-    write_to_file('../label_converter/command_test.txt', code)
+    write_to_file('label_converter/command_test.txt', code)
 
     interpreter.generated_code.clear()
     interpreter.generated_code.append(code_generating_constants)
-    program1 = Program(Declarations([]), Commands([
-        test_if_then_eq(), test_if_then_neq(), test_if_then_geq_ge_leq(),
-        test_if_then_leq_geq_neq(), test_if_then_le_ge_eq(), test_if_then_else_eq_on_false(),
-        test_if_then_else_eq_on_true(), test_if_then_else_neg_on_true(), test_if_then_else_neq_on_false(),
-        test_if_then_else_le_on_false_ge_on_true(), test_if_then_else_le_on_true_ge_on_false(),
-        test_if_then_else_leq_on_false_geq_on_true(), test_if_then_else_leq_on_true_geq_on_false(),
-        test_if_then_else_leq_on_true_geq_on_true_with_equality(), *test_while_do_zero_iterations(),
-        *test_while_do_50_iterations(), *test_while_do_nested(), *test_do_while_50_iterations(),
-        *test_do_while_zero_iterations()
+    tests = [
+        test_if_then_eq, test_if_then_neq, test_if_then_geq_ge_leq,
+        test_if_then_leq_geq_neq, test_if_then_le_ge_eq, test_if_then_else_eq_on_false,
+        test_if_then_else_eq_on_true, test_if_then_else_neg_on_true, test_if_then_else_neq_on_false,
+        test_if_then_else_le_on_false_ge_on_true, test_if_then_else_le_on_true_ge_on_false,
+        test_if_then_else_leq_on_false_geq_on_true, test_if_then_else_leq_on_true_geq_on_false,
+        test_if_then_else_leq_on_true_geq_on_true_with_equality, test_while_do_zero_iterations,
+        test_while_do_50_iterations, test_while_do_nested, test_do_while_50_iterations,
+        test_do_while_zero_iterations]
 
-    ]))
+    expected = flatten(t.expected for t in tests)
+
+    program1 = Program(Declarations([]), Commands(flatten(t() for t in tests)))
     # 1, 1, <33>, 555, -2000, 2555, <22>, <11>, <111>, 33, 22, 33, 22, 11, 44, 1000, 555, -2000, 11, 1000,
     # <33>, 44, 555, 1000, -2000, 200, 300,  100, 200,  200, 300,  100, 200, 100, 200,
     # 0, 0, 0, 50 (while do) 555, 1000, 1000, 1000, 555, 555, 6, -80 (while do nested),
     # 50, 0, 1 (do while)
+
     code_all: str = interpreter.visit_program(program1)
-    write_to_file('../label_converter/command_test_all.txt', code_all)
-
-    import subprocess as subpr
-
-    # out = subpr.check_output(["C:\\Users\\Kamil\\compiler\\maszyna_wirtualna\\maszyna-wirtualna",
-    #                           "C:\\Users\\Kamil\\compiler\\src\\label_converter"])
-    # print(out)
+    out: str = run_code(code_all, 'command_test.txt', 'exe_command_test.txt')
+    print(out)
+    returned = []
+    for line in out.splitlines()[1:-1]:
+        if line.startswith('>'):
+            num: int = int(line[2:])
+            returned.append(num)
+    print('unmatched: (result number, (expected, returned))')
+    pprint(list((i, (e, r)) for i, (e, r) in enumerate(zip(expected, returned)) if e != r))
+    assert expected == returned
