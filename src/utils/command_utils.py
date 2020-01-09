@@ -141,7 +141,7 @@ def write_code_for_while_do_command(
 ) -> None:
     label_start = visitor.label_provider.get_label()
     label_end = visitor.label_provider.get_label()
-    visitor.generated_code.append(f'## BEGIN while do loop\n{label_start}\n')
+    visitor.generated_code.append(f'## BEGIN while-do loop\n{label_start}\n')
     if_help = IfThenElseCommand(
         condition=command.condition,
         commands_true=Commands(command.commands.commands + [JumpCommand(label_start)]),
@@ -149,4 +149,18 @@ def write_code_for_while_do_command(
             JumpCommand(label_end)
         ]))
     if_help.accept(visitor)
-    visitor.generated_code.append(f'{label_end}\n## END while do loop\n')
+    visitor.generated_code.append(f'{label_end}\n## END while-do loop\n')
+
+
+def write_code_for_do_while_command(
+        command: DoWhileCommand,
+        visitor: 'ASTInterpreter'
+) -> None:
+    label_start = visitor.label_provider.get_label()
+    visitor.generated_code.append(f'## BEGIN do-while loop\n{label_start}\n')
+    if_help = IfThenCommand(
+        condition=command.condition,
+        commands=Commands([JumpCommand(label_start)]))
+    command.commands.accept(visitor)
+    if_help.accept(visitor)
+    visitor.generated_code.append(f'## END do-while loop\n')
