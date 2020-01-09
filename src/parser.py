@@ -1,7 +1,10 @@
 from sly import Parser
+
+from label_converter.label_converter import convert_labels_to_registers
 from lexer import CompilerLexer
 from structures.ast.AST import *
 from utils.AST_interpreter import ASTInterpreter
+from utils.utils import write_to_file
 
 
 class CompilerParser(Parser):
@@ -14,7 +17,7 @@ class CompilerParser(Parser):
 
     @_('BEGIN commands END')
     def program(self, p) -> Program:
-        return Program(declarations=Declarations(List()), commands=p.commands)
+        return Program(declarations=Declarations(list()), commands=p.commands)
 
     @_('declarations "," IDENTIFIER')
     def declarations(self, p) -> Declarations:
@@ -134,12 +137,16 @@ if __name__ == '__main__':
     #     result = parser.parse(lexer.tokenize(data))
     #     print(result)
 
-    with open('test2', 'r') as file:
+    with open('test3.imp', 'r') as file:
         data = file.read()
-        result = parser.parse(lexer.tokenize(data))
+        # print(list(lexer.tokenize(data)))
+        result: Program = parser.parse(lexer.tokenize(data))
         print(result)
         interpreter = ASTInterpreter(result)
+        code = result.accept(visitor=interpreter)
 
+        write_to_file("test3.out", code)
+        convert_labels_to_registers("test3.out")
     # while True:
     #     try:
     #         text = input('calc > ')

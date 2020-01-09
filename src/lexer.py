@@ -49,7 +49,7 @@ class CompilerLexer(Lexer):
     BEGIN = r'BEGIN'
     END = r'END'
 
-    @_(r'\d+')
+    @_(r'-?\d+')
     def NUMBER(self, t):
         t.value = int(t.value)
         return t

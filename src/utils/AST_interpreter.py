@@ -134,6 +134,7 @@ class ASTInterpreter(Visitor):
 
     def visit_program(self, program: 'Program') -> str:
         # declaration are handled in __init__
+        program.commands.accept(self)
         result_code: str = ""
         for code_fragment in self.generated_code:
             result_code = result_code + code_fragment

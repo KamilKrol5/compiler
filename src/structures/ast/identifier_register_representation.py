@@ -29,7 +29,7 @@ class DynamicIdentifierAccess(AbstractIdentifierAccess):
         self.generating_str = generating_str
 
     def store(self) -> str:
-        return "storei 9"
+        return "STOREI 9\n"
 
     def prepare_register(self):
         return self.generating_str + "STORE 9\n"
