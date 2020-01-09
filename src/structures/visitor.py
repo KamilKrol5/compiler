@@ -88,3 +88,7 @@ class Visitor(ABC):
     @abstractmethod
     def visit_program(self, program: 'Program'):
         pass
+
+    @abstractmethod
+    def visit_jump_command(self, jump_command: 'JumpCommand'):
+        pass

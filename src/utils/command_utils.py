@@ -131,3 +131,22 @@ def write_code_for_assignment_command(
     command.expression.accept(visitor)
     visitor.generated_code.append(register.store())
 
+
+''' Writes code for while do loop to visitor's generated code.'''
+
+
+def write_code_for_while_do_command(
+        command: WhileDoCommand,
+        visitor: 'ASTInterpreter'
+) -> None:
+    label_start = visitor.label_provider.get_label()
+    label_end = visitor.label_provider.get_label()
+    visitor.generated_code.append(f'## BEGIN while do loop\n{label_start}\n')
+    if_help = IfThenElseCommand(
+        condition=command.condition,
+        commands_true=Commands(command.commands.commands + [JumpCommand(label_start)]),
+        commands_false=Commands([
+            JumpCommand(label_end)
+        ]))
+    if_help.accept(visitor)
+    visitor.generated_code.append(f'{label_end}\n## END while do loop\n')

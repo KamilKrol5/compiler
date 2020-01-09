@@ -345,6 +345,18 @@ class WriteCommand(Command):
                indent * INDENT + ']>'
 
 
+class JumpCommand(Command):
+    def accept(self, visitor: Visitor):
+        return visitor.visit_jump_command(self)
+
+    def __init__(self, destination_label: str):
+        self.destination_label = destination_label
+
+    def to_str_with_indent(self, indent=0) -> str:
+        return indent * INDENT + f'<*JumpCommand[ destination_label = {self.destination_label}\n' + \
+               indent * INDENT + ']>'
+
+
 class Program(ASTElement):
     def accept(self, visitor: Visitor) -> str:
         return visitor.visit_program(self)

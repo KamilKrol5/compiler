@@ -3,7 +3,7 @@ from typing import Dict, Tuple
 
 from utils.IO_utils import generate_code_for_write_command, generate_code_for_read_command
 from utils.command_utils import write_code_for_if_then_command, write_code_for_if_then_else_command, \
-    write_code_for_assignment_command
+    write_code_for_assignment_command, write_code_for_while_do_command
 from utils.expression_utils import generate_code_for_expression
 from utils.label_provider import LabelProvider
 from utils.loop_utils import generate_condition
@@ -20,7 +20,7 @@ class ASTInterpreter(Visitor):
         self.declared_variables: Dict[str, int] = dict()
         self.declared_arrays: Dict[str, Tuple[int, int, ArrayDeclaration]] = dict()
         self.generated_code: List[str] = ['## Program\n']
-        self.label_provider: LabelProvider = LabelProvider('#label ')
+        self.label_provider: LabelProvider = LabelProvider('%label_')
         self._assign_registers_to_variables()
 
     def _assign_registers_to_variables(self):
@@ -114,7 +114,7 @@ class ASTInterpreter(Visitor):
         write_code_for_if_then_command(if_then_command, self)
 
     def visit_while_do_command(self, while_do_command: 'WhileDoCommand') -> None:
-        pass
+        write_code_for_while_do_command(while_do_command, self)
 
     def visit_do_while_command(self, do_while_command: 'DoWhileCommand') -> None:
         pass
@@ -131,6 +131,14 @@ class ASTInterpreter(Visitor):
         # TODO change it
         self.generated_code.append(
             generate_code_for_write_command(write_command, self.declared_variables, self.declared_arrays))
+
+    ''' Writes code for making JUMP to the label specified in JumpCommand.
+        Method does not check if given label has any sense or if it has corresponding label in the generated code.'''
+
+    def visit_jump_command(self, jump_command: JumpCommand) -> None:
+        self.generated_code.append(
+            f'JUMP {jump_command.destination_label}\n'
+        )
 
     def visit_program(self, program: 'Program') -> str:
         # declaration are handled in __init__

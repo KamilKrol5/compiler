@@ -13,12 +13,12 @@ def convert_labels_to_registers(filename='filename.txt'):
         for line in lines:
             if re.match(r'^(##).*\n', line):
                 continue
-            if line.startswith('#label'):
+            if line.startswith('%label_'):
                 labels_dest[line[1:-1]] = line_counter
             else:
                 line_counter = line_counter + 1
-                if re.match(r'.+#label.*\n', line):
-                    r = re.search('.+#(label [0-9]+).*\n', line)
+                if re.match(r'.+%label_.*\n', line):
+                    r = re.search(r'.+%(label_[0-9]+).*\n', line)
                     if r:
                         lbl = r.group(1)
                         labels_to_replace[lbl] = line_counter
@@ -28,7 +28,7 @@ def convert_labels_to_registers(filename='filename.txt'):
                 data = data + line
 
         for label, reg in labels_dest.items():
-            regex = rf'#{label}$'
+            regex = rf'%{label}$'
             data = re.sub(regex, str(reg), data, flags=re.MULTILINE)
             labels_to_replace[label] = None
 

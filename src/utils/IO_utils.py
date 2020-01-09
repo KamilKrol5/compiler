@@ -38,5 +38,6 @@ def generate_code_for_write_command(
         declared_variables: Dict[str, int],
         declared_arrays: Dict[str, Tuple[int, int, ArrayDeclaration]],
 ) -> str:
-    result: str = generate_code_for_loading_value(write_command.value, declared_variables, declared_arrays)
-    return result + 'PUT\n'
+    result: str = '## BEGIN write command\n' + \
+        generate_code_for_loading_value(write_command.value, declared_variables, declared_arrays)
+    return result + 'PUT\n' + '## END write command\n'
