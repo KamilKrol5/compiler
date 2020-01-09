@@ -33,12 +33,12 @@ def convert_labels_to_registers(filename='filename.txt', output_filename='imp_ex
             labels_to_replace[label] = None
 
         if all(map(lambda x: x is None, labels_to_replace.values())):
-            print("IT'S GOOD!")
+            print("Label converter info: All labels, found as needing to be replaced, were replace successfully")
         else:
             raise Exception('Not all labels were replaced!')
 
         data = re.sub(r'^(##).*\n', '', data, flags=re.MULTILINE)
-        print('________________________')
+        print('_____________________________________________________')
         #print(data)
         with(open(output_filename, 'w', newline='\n')) as file2:
             file2.write(data)

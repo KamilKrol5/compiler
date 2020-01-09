@@ -1,8 +1,6 @@
 from pprint import pprint
-
 from utils.AST_interpreter import ASTInterpreter
-from utils.test_utils import run_code, expected, flatten
-from utils.utils import write_to_file
+from utils.test_utils import expected, flatten, get_numbers_from_run_code
 from utils.math_utils import *
 from structures.ast.AST import *
 from typing import Tuple
@@ -449,7 +447,7 @@ def test_do_while_zero_iterations() -> Tuple[Command, Command, Command, Command]
 
 if __name__ == '__main__':
     code_generating_constants: str = generate_number(555, 32) + generate_number(2, 64) + generate_number(-2000, 125) + \
-                                     generate_number(-666, 142) + generate_number(1000, 263) + generate_number(50,65) +\
+                                     generate_number(-666, 142) + generate_number(1000, 263) + generate_number(50, 65) +\
                                      generate_number(-10, 66) + \
                                      generate_number(0, 67)
     # c = 555, d = 2, arr[-15] = -2000, brr[2] =  brr[d] = 1000, array_var_one = 50, array_var_two = -10, i = 0
@@ -458,7 +456,7 @@ if __name__ == '__main__':
         *test_do_while_zero_iterations()
     ]))
     code = interpreter.visit_program(program1)
-    write_to_file('label_converter/command_test.txt', code)
+    returned1: List[int] = get_numbers_from_run_code(code, 'command_test.txt', 'exe_command_test.txt')
 
     interpreter.generated_code.clear()
     interpreter.generated_code.append(code_generating_constants)
@@ -475,19 +473,15 @@ if __name__ == '__main__':
     expected = flatten(t.expected for t in tests)
 
     program1 = Program(Declarations([]), Commands(flatten(t() for t in tests)))
-    # 1, 1, <33>, 555, -2000, 2555, <22>, <11>, <111>, 33, 22, 33, 22, 11, 44, 1000, 555, -2000, 11, 1000,
+    # 1, 1, <33>, 555, -2000, <22>, <11>, <111>, 33, 22, 33, 22, 11, 44, 1000, 555, -2000, 11, 1000,
     # <33>, 44, 555, 1000, -2000, 200, 300,  100, 200,  200, 300,  100, 200, 100, 200,
     # 0, 0, 0, 50 (while do) 555, 1000, 1000, 1000, 555, 555, 6, -80 (while do nested),
     # 50, 0, 1 (do while)
 
     code_all: str = interpreter.visit_program(program1)
-    out: str = run_code(code_all, 'command_test.txt', 'exe_command_test.txt')
-    print(out)
-    returned = []
-    for line in out.splitlines()[1:-1]:
-        if line.startswith('>'):
-            num: int = int(line[2:])
-            returned.append(num)
+    returned: List[int] = get_numbers_from_run_code(code_all, 'command_test_all.txt', 'exe_command_test_all.txt')
+
     print('unmatched: (result number, (expected, returned))')
     pprint(list((i, (e, r)) for i, (e, r) in enumerate(zip(expected, returned)) if e != r))
     assert expected == returned
+    print('ALL TESTS PASSED')
