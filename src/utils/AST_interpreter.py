@@ -56,6 +56,15 @@ class ASTInterpreter(Visitor):
             generate_number(0, destination_register=self.declared_variables[self.ZERO_VAR_NAME]) +
             generate_number(-1, destination_register=self.declared_variables[self.MINUS_ONE_VAR_NAME]))
 
+    def add_new_numeric_variable(self, number_declaration: NumberDeclaration, default_value=None) -> None:
+        self.program.declarations.declarations.append(number_declaration)
+        self.declared_variables[number_declaration.identifier] = self.VARIABLES_START_REGISTER + 1
+        self.VARIABLES_START_REGISTER = self.VARIABLES_START_REGISTER + 1
+        if default_value is not None:
+            # assume tht default_value is type int
+            self.generated_code.append(generate_number(
+                default_value, self.declared_variables[number_declaration.identifier]))
+
     def visit_int_number_value(self, int_number_value: 'IntNumberValue') -> int:
         pass
 
