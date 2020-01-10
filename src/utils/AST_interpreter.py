@@ -13,22 +13,34 @@ from structures.ast.identifier_register_representation import *
 from utils.math_utils import generate_number
 
 
+class LocalVariableAlreadyDeclaredException(Exception):
+    pass
+
+
 class ASTInterpreter(Visitor):
     VARIABLES_START_REGISTER = 100
+    LOCAL_VAR_SUFFIX = '@local'
     ONE_VAR_NAME = '@one'
     MINUS_ONE_VAR_NAME = '@minus_one'
     ZERO_VAR_NAME = '@zero'
+    freed_variable_registers: List[int] = list()
 
     def __init__(self, program: Program):
         self.program: Program = program
         self.program.declarations.declarations.extend([NumberDeclaration(self.ONE_VAR_NAME),
                                                        NumberDeclaration(self.MINUS_ONE_VAR_NAME),
                                                        NumberDeclaration(self.ZERO_VAR_NAME)])
+
+        # structures for variables
         self.declared_variables: Dict[str, int] = dict()
+        self.local_variables: Dict[str, int] = dict()
         self.declared_arrays: Dict[str, Tuple[int, int, ArrayDeclaration]] = dict()
         self.generated_code: List[str] = ['## Program\n']
+
+        # label and name generators/providers
         self.label_provider: LabelProvider = LabelProvider('%label_')
         self.loop_name_provider: LabelProvider = LabelProvider('#loop')
+
         self._assign_registers_to_variables()
         self.generate_one_and_minus_one()
 
@@ -57,14 +69,68 @@ class ASTInterpreter(Visitor):
             generate_number(0, destination_register=self.declared_variables[self.ZERO_VAR_NAME]) +
             generate_number(-1, destination_register=self.declared_variables[self.MINUS_ONE_VAR_NAME]))
 
-    def add_new_numeric_variable(self, number_declaration: NumberDeclaration, default_value=None) -> None:
-        self.program.declarations.declarations.append(number_declaration)
-        self.declared_variables[number_declaration.identifier] = self.VARIABLES_START_REGISTER + 1
-        self.VARIABLES_START_REGISTER = self.VARIABLES_START_REGISTER + 1
+    ''' Returns local variable key in the declared_variables map.
+        Example: call with argument 'i' will return 'i@local'.'''
+
+    def get_local_variable_name_in_declared_variables_map(self, variable_name: str) -> str:
+        return variable_name + self.LOCAL_VAR_SUFFIX
+
+    ''' Add local variable to the interpreter. If there was the same variable already declared 
+        an LocalVariableAlreadyDeclaredException is raised. 
+        More details below - in method comments.'''
+
+    def add_local_variable(self, number_declaration: NumberDeclaration, default_value=None) -> None:
+        # An assumption: there cannot be two nested local variables named the same.
+        if number_declaration.identifier in self.local_variables or \
+            self.get_local_variable_name_in_declared_variables_map(number_declaration.identifier) \
+                in self.declared_variables:
+            raise LocalVariableAlreadyDeclaredException(f'Local variable with "{number_declaration.identifier}" was '
+                                                        f'already defined.')
+
+        # self.program.declarations.declarations.append(number_declaration) not needed
+        if len(self.freed_variable_registers) != 0:
+            new_local_variable_register = self.freed_variable_registers.pop()
+        else:
+            new_local_variable_register = self.VARIABLES_START_REGISTER + 1
+            self.VARIABLES_START_REGISTER = self.VARIABLES_START_REGISTER + 1  # incrementation right after assignment
+
+        # add local variable to list of all declared variables, name of this variable will be
+        # followed by '@local' to avoid conflicts with user declared variables.
+        # example: local variable 'i' will be stored as 'i@local' in <self.declared_variables> map
+        self.declared_variables[self.get_local_variable_name_in_declared_variables_map(number_declaration.identifier)]\
+            = new_local_variable_register
+
+        # a new variable needs also to be added to <self.local_variables> map,
+        # it will allow shadowing mechanism in for loop.
+        # An assignment command can check if left-side-assignment variable
+        # is present in local variables, if it is, then it cannot be modified and the access to this variable should
+        # be performed with @local postfix.
+        # Example: Let's assume we have user declared variable 'k', and now we declare local variable names also 'k',
+        # (ex. for loop with iterator k). After adding local(!) variable named'k':
+        #       - 'k' and 'k@local' is present in <self.declared_variables>
+        #       - 'k' is present in <self.local_variables>
+        # Now in the for loop: If someone wants to assign value to 'k' variable, the assignment command will know
+        # that it is local variable (or later changed to loop/iterator variable) and it cannot be modified, so
+        # error can be detected. If someone wants to read value of variable 'k' (still in a for loop) reading procedure
+        # can check if it is local variable now. if it is the value should be read from 'k@local' variable. There is
+        # no need to check both maps with variables. In the end of scope of local variable it has to be removed!
+        self.local_variables[number_declaration.identifier] = new_local_variable_register
+        # If default value is provided the code for assigning new variable with default value will be generated
         if default_value is not None:
             # assume tht default_value is type int
             self.generated_code.append(generate_number(
-                default_value, self.declared_variables[number_declaration.identifier]))
+                default_value, self.local_variables[number_declaration.identifier]))
+
+    ''' Removes previously added local variable from self.local_variables and self.declared_variables.
+        local_identifier_name is variable name present in local_variables (in basic case without @local suffix).
+        Example: call with 'i' as argument will remove 'i' variable from local_variables and 'i@local' from
+        declared_variables.'''
+
+    def remove_local_variable(self, local_identifier_name: str) -> None:
+        self.declared_variables.pop(self.get_local_variable_name_in_declared_variables_map(local_identifier_name))
+        freed_register: int = self.local_variables.pop(local_identifier_name)
+
+        self.freed_variable_registers.append(freed_register)
 
     def visit_int_number_value(self, int_number_value: 'IntNumberValue') -> int:
         pass
