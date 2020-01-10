@@ -11,6 +11,7 @@ from utils.arrays_utils import generate_code_for_computing_index_of_array_elemen
     compute_real_register_of_array_element
 from structures.ast.identifier_register_representation import *
 from utils.math_utils import generate_number
+from utils.value_utils import generate_code_for_loading_value
 
 
 class LocalVariableAlreadyDeclaredException(Exception):
@@ -229,6 +230,20 @@ class ASTInterpreter(Visitor):
         self.generated_code.append(
             f'JUMP {jump_command.destination_label}\n'
         )
+
+    ''' Writes code for incrementing or decrementing a variable included in increment_decrement_command argument
+        as variableIdentifier. It loads this variable, perform operation and saves result in this variable.'''
+
+    def visit_increment_decrement_command(self, increment_decrement_command: IncrementDecrementCommand) -> None:
+        code: str = generate_code_for_loading_value(
+            IdentifierValue(increment_decrement_command.identifier),
+            self.declared_variables, self.declared_arrays)
+        if increment_decrement_command.is_decrement:
+            code = code + 'DEC\n'
+        else:
+            code = code + 'INC\n'
+        code = code + f'STORE {self.declared_variables[increment_decrement_command.identifier.identifier_name]}\n'
+        self.generated_code.append(code)
 
     def visit_program(self, program: 'Program') -> str:
         # declaration are handled in __init__

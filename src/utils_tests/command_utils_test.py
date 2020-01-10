@@ -445,6 +445,47 @@ def test_do_while_zero_iterations() -> Tuple[Command, Command, Command, Command]
     return zero, write, loop, write
 
 
+@expected(10, 11)
+def test_increment_decrement_command_inc() -> Tuple[Command, Command, Command, Command]:
+    assign_i = AssignmentCommand(
+        VariableIdentifier('i'),
+        ExpressionHavingOneValue(IntNumberValue(10)))
+    write = WriteCommand(IdentifierValue(VariableIdentifier('i')))
+    inc_dec_command = IncrementDecrementCommand(VariableIdentifier('i'))
+    return assign_i, write, inc_dec_command, write
+
+
+@expected(5, 4)
+def test_increment_decrement_command_dec() -> Tuple[Command, Command, Command, Command]:
+    assign_i = AssignmentCommand(
+        VariableIdentifier('i'),
+        ExpressionHavingOneValue(IntNumberValue(5)))
+    write = WriteCommand(IdentifierValue(VariableIdentifier('i')))
+    inc_dec_command = IncrementDecrementCommand(VariableIdentifier('i'), is_decrement=True)
+    return assign_i, write, inc_dec_command, write
+
+
+@expected(5)
+def test_increment_decrement_command_multiple() -> Tuple[Command, Command, Command]:
+    assign_i = AssignmentCommand(
+        VariableIdentifier('i'),
+        ExpressionHavingOneValue(IntNumberValue(5)))
+    write = WriteCommand(IdentifierValue(VariableIdentifier('i')))
+    cond = IfThenCommand(
+        TwoValueCondition(IdentifierValue(VariableIdentifier('d')), IntNumberValue(555), 'NEQ'), # true
+        Commands(commands=[
+            IncrementDecrementCommand(VariableIdentifier('i'), is_decrement=True),
+            IncrementDecrementCommand(VariableIdentifier('i'), is_decrement=False),
+            IncrementDecrementCommand(VariableIdentifier('i'), is_decrement=True),
+            IncrementDecrementCommand(VariableIdentifier('i'), is_decrement=False),
+            IncrementDecrementCommand(VariableIdentifier('i'), is_decrement=False),
+            IncrementDecrementCommand(VariableIdentifier('i'), is_decrement=False),
+            IncrementDecrementCommand(VariableIdentifier('i'), is_decrement=True),
+            IncrementDecrementCommand(VariableIdentifier('i'), is_decrement=True),
+        ]))
+    return assign_i, cond, write
+
+
 if __name__ == '__main__':
     code_generating_constants: str = generate_number(555, 32) + generate_number(2, 64) + generate_number(-2000, 125) + \
                                      generate_number(-666, 142) + generate_number(1000, 263) + generate_number(50, 65) +\
@@ -456,7 +497,7 @@ if __name__ == '__main__':
         *test_do_while_zero_iterations()
     ]))
     code = interpreter.visit_program(program1)
-    returned1: List[int] = get_numbers_from_run_code(code, 'command_test.txt', 'exe_command_test.txt')
+    # returned1: List[int] = get_numbers_from_run_code(code, 'command_test.txt', 'exe_command_test.txt')
 
     interpreter.generated_code.clear()
     interpreter.generated_code.append(code_generating_constants)
@@ -468,7 +509,8 @@ if __name__ == '__main__':
         test_if_then_else_leq_on_false_geq_on_true, test_if_then_else_leq_on_true_geq_on_false,
         test_if_then_else_leq_on_true_geq_on_true_with_equality, test_while_do_zero_iterations,
         test_while_do_50_iterations, test_while_do_nested, test_do_while_50_iterations,
-        test_do_while_zero_iterations]
+        test_do_while_zero_iterations, test_increment_decrement_command_inc, test_increment_decrement_command_dec,
+        test_increment_decrement_command_multiple]
 
     expected = flatten(t.expected for t in tests)
 
@@ -476,7 +518,7 @@ if __name__ == '__main__':
     # 1, 1, <33>, 555, -2000, <22>, <11>, <111>, 33, 22, 33, 22, 11, 44, 1000, 555, -2000, 11, 1000,
     # <33>, 44, 555, 1000, -2000, 200, 300,  100, 200,  200, 300,  100, 200, 100, 200,
     # 0, 0, 0, 50 (while do) 555, 1000, 1000, 1000, 555, 555, 6, -80 (while do nested),
-    # 50, 0, 1 (do while)
+    # 50, 0, 1 (do while), 10, 11, 5, 4
 
     code_all: str = interpreter.visit_program(program1)
     returned: List[int] = get_numbers_from_run_code(code_all, 'command_test_all.txt', 'exe_command_test_all.txt')

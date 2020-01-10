@@ -92,3 +92,7 @@ class Visitor(ABC):
     @abstractmethod
     def visit_jump_command(self, jump_command: 'JumpCommand'):
         pass
+
+    @abstractmethod
+    def visit_increment_decrement_command(self, increment_decrement_command: 'IncrementDecrementCommand'):
+        pass

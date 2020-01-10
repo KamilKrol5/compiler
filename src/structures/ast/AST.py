@@ -18,7 +18,10 @@ class PrintableWithIndent:
 
 
 class Value(ABC, ASTElement, PrintableWithIndent):
-    pass
+    """ Returns if value can be known statically."""
+    @abstractmethod
+    def is_static(self) -> bool:
+        pass
 
 
 class Identifier(ABC, ASTElement, PrintableWithIndent):
@@ -28,6 +31,9 @@ class Identifier(ABC, ASTElement, PrintableWithIndent):
 class IntNumberValue(Value):
     def accept(self, visitor: Visitor):
         return visitor.visit_int_number_value(self)
+
+    def is_static(self) -> bool:
+        return True
 
     def __init__(self, value: int):
         self.value = value
@@ -42,6 +48,9 @@ class IdentifierValue(Value):
 
     def __init__(self, identifier: Identifier):
         self.identifier = identifier
+
+    def is_static(self) -> bool:
+        return False
 
     def to_str_with_indent(self, indent=0) -> str:
         return indent * INDENT + f'<IdentifierValue[ ' \
@@ -354,6 +363,20 @@ class JumpCommand(Command):
 
     def to_str_with_indent(self, indent=0) -> str:
         return indent * INDENT + f'<*JumpCommand[ destination_label = {self.destination_label}\n' + \
+               indent * INDENT + ']>'
+
+
+class IncrementDecrementCommand(Command):
+    def accept(self, visitor: Visitor):
+        return visitor.visit_increment_decrement_command(self)
+
+    def __init__(self, identifier: VariableIdentifier, is_decrement=False):
+        self.identifier = identifier
+        self.is_decrement = is_decrement
+
+    def to_str_with_indent(self, indent=0) -> str:
+        return indent * INDENT + f'<*IncrementDecrementCommand[ is_decrement = {self.is_decrement}, identifier = ' \
+               f'{self.identifier.to_str_with_indent(indent + 1)} ]' + \
                indent * INDENT + ']>'
 
 
