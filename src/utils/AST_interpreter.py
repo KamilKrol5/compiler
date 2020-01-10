@@ -79,12 +79,12 @@ class ASTInterpreter(Visitor):
         an LocalVariableAlreadyDeclaredException is raised. 
         More details below - in method comments.'''
 
-    def add_local_variable(self, number_declaration: NumberDeclaration, default_value=None) -> None:
+    def add_local_variable(self, variable_name: str, default_value=None) -> None:
         # An assumption: there cannot be two nested local variables named the same.
-        if number_declaration.identifier in self.local_variables or \
-            self.get_local_variable_name_in_declared_variables_map(number_declaration.identifier) \
+        if variable_name in self.local_variables or \
+            self.get_local_variable_name_in_declared_variables_map(variable_name) \
                 in self.declared_variables:
-            raise LocalVariableAlreadyDeclaredException(f'Local variable with "{number_declaration.identifier}" was '
+            raise LocalVariableAlreadyDeclaredException(f'Local variable with "{variable_name}" was '
                                                         f'already defined.')
 
         # self.program.declarations.declarations.append(number_declaration) not needed
@@ -97,7 +97,7 @@ class ASTInterpreter(Visitor):
         # add local variable to list of all declared variables, name of this variable will be
         # followed by '@local' to avoid conflicts with user declared variables.
         # example: local variable 'i' will be stored as 'i@local' in <self.declared_variables> map
-        self.declared_variables[self.get_local_variable_name_in_declared_variables_map(number_declaration.identifier)]\
+        self.declared_variables[self.get_local_variable_name_in_declared_variables_map(variable_name)]\
             = new_local_variable_register
 
         # a new variable needs also to be added to <self.local_variables> map,
@@ -114,12 +114,12 @@ class ASTInterpreter(Visitor):
         # error can be detected. If someone wants to read value of variable 'k' (still in a for loop) reading procedure
         # can check if it is local variable now. if it is the value should be read from 'k@local' variable. There is
         # no need to check both maps with variables. In the end of scope of local variable it has to be removed!
-        self.local_variables[number_declaration.identifier] = new_local_variable_register
+        self.local_variables[variable_name] = new_local_variable_register
         # If default value is provided the code for assigning new variable with default value will be generated
         if default_value is not None:
             # assume tht default_value is type int
             self.generated_code.append(generate_number(
-                default_value, self.local_variables[number_declaration.identifier]))
+                default_value, self.local_variables[variable_name]))
 
     ''' Removes previously added local variable from self.local_variables and self.declared_variables.
         local_identifier_name is variable name present in local_variables (in basic case without @local suffix).
