@@ -28,6 +28,7 @@ class ASTInterpreter(Visitor):
         self.declared_arrays: Dict[str, Tuple[int, int, ArrayDeclaration]] = dict()
         self.generated_code: List[str] = ['## Program\n']
         self.label_provider: LabelProvider = LabelProvider('%label_')
+        self.loop_name_provider: LabelProvider = LabelProvider('#loop')
         self._assign_registers_to_variables()
         self.generate_one_and_minus_one()
 

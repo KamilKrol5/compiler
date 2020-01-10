@@ -3,6 +3,6 @@ class LabelProvider:
         self.counter = 0
         self.initial_label = initial_label
 
-    def get_label(self):
+    def get_label(self) -> str:
         self.counter = self.counter + 1
         return self.initial_label + str(self.counter)
