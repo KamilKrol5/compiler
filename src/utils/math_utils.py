@@ -1,8 +1,16 @@
 from math import floor, log
+
+from utils.label_provider import LabelProvider
 from utils.utils import clean_p0
 
 MODULO = 100
 DIVISION = 200
+
+
+# Generates code for performing abs operation on the number present in register 0 (p0).
+def generate_abs(label_provider: LabelProvider) -> str:
+    label = label_provider.get_label()
+    return f'JPOS {label}\n' + negate_number() + f'{label}\n'
 
 
 # Negates number which is in register 0 (p0)
