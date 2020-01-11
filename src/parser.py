@@ -1,9 +1,12 @@
+import sys
+
 from sly import Parser
 
 from label_converter.label_converter import convert_labels_to_registers
 from lexer import CompilerLexer
 from structures.ast.AST import *
 from utils.AST_interpreter import ASTInterpreter
+from utils.test_utils import run_code
 from utils.utils import write_to_file
 
 
@@ -132,11 +135,10 @@ if __name__ == '__main__':
     lexer = CompilerLexer()
     parser = CompilerParser()
 
-    # with open('test2', 'r') as file:
-    #     data = file.read()
-    #     result = parser.parse(lexer.tokenize(data))
-    #     print(result)
-    src_file = 'test_mul.imp'
+    src_file = 'test3.imp'
+    if len(sys.argv) == 2:
+        src_file = sys.argv[1]
+
     with open(src_file, 'r') as file:
         data = file.read()
         # print(list(lexer.tokenize(data)))
@@ -145,12 +147,11 @@ if __name__ == '__main__':
         interpreter = ASTInterpreter(result)
         code = result.accept(visitor=interpreter)
 
-        write_to_file(f"{src_file}.out", code)
-        convert_labels_to_registers(f"{src_file}.out")
-    # while True:
-    #     try:
-    #         text = input('calc > ')
-    #         result = parser.parse(lexer.tokenize(text))
-    #         print(result)
-    #     except EOFError:
-    #         break
+        if len(sys.argv) == 3 and sys.argv[2] == '--run':
+            print('RUNNING CODE')
+            out = run_code(code, f'{src_file}.intermediate', f'exe_{src_file}')
+            print(out)
+        else:
+            write_to_file(f"{src_file}.out", code)
+            convert_labels_to_registers(f"{src_file}.out")
+
