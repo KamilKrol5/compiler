@@ -1,20 +1,12 @@
-from typing import Dict, Tuple
-from structures.ast.AST import ForCommand, TwoValueCondition, ArrayDeclaration, IdentifierValue, VariableIdentifier
+from utils.AST_interpreter import *
 from utils.value_utils import load_value_by_identifier, generate_number
-
-''' Generates for loop'''
-
-
-def generate_for_loop(loop: ForCommand) -> str:
-    raise NotImplementedError()
 
 
 ''' Generates code for subtraction left value from right value
     Registers used: 0-4'''
 
 
-def generate_condition(condition: TwoValueCondition, declared_variables: Dict[str, int],
-                       declared_arrays: Dict[str, Tuple[int, int, ArrayDeclaration]]) -> str:
+def generate_condition(condition: TwoValueCondition, visitor: 'ASTInterpreter') -> str:
     is_left_id_value = isinstance(condition.valueLeft, IdentifierValue)
     is_right_id_value = isinstance(condition.valueRight, IdentifierValue)
 
@@ -27,18 +19,18 @@ def generate_condition(condition: TwoValueCondition, declared_variables: Dict[st
         left: int = condition.valueLeft.value
         right: VariableIdentifier = condition.valueRight.identifier
         result = generate_number(left, destination_register=0) + \
-            f'SUB {declared_variables.get(right.identifier_name)}\n'
+            f'SUB {visitor.declared_variables.get(right.identifier_name)}\n'
     elif is_left_id_value and not is_right_id_value:
         left: VariableIdentifier = condition.valueLeft.identifier
         right: int = condition.valueRight.value
         result = generate_number(right, destination_register=3) + \
-            load_value_by_identifier(left, declared_variables, dest_register=0, declared_arrays=declared_arrays) + \
+            load_value_by_identifier(left, visitor, dest_register=0) + \
             'SUB 3\n'
     elif is_left_id_value and is_right_id_value:
         left: VariableIdentifier = condition.valueLeft.identifier
         right: VariableIdentifier = condition.valueRight.identifier
-        result = load_value_by_identifier(right, declared_variables, dest_register=3, declared_arrays=declared_arrays) +\
-            load_value_by_identifier(left, declared_variables, dest_register=0, declared_arrays=declared_arrays) + \
+        result = load_value_by_identifier(right, visitor, dest_register=3) +\
+            load_value_by_identifier(left, visitor, dest_register=0) + \
             f'SUB 3\n'
     else:
         raise ValueError('Unknown instance of Identifier occurred.')

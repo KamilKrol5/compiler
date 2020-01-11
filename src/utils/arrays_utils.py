@@ -1,3 +1,4 @@
+from utils.AST_interpreter import *
 from utils.math_utils import generate_number
 from typing import Dict, Tuple
 from structures.ast.AST import ArrayDeclaration, ArrayElementByIntNumberIdentifier, ArrayElementByVariableIdentifier
@@ -7,9 +8,9 @@ from structures.ast.AST import ArrayDeclaration, ArrayElementByIntNumberIdentifi
 
 
 def compute_relative_register_of_array_element(declaration: ArrayDeclaration, user_typed_element_index: int) -> int:
-    if user_typed_element_index < declaration.begin_index.value or user_typed_element_index > declaration.end_index.value:
-        raise \
-            IndexError(
+    if user_typed_element_index < declaration.begin_index.value or \
+            user_typed_element_index > declaration.end_index.value:
+        raise IndexError(
                 'An attempt to compute real register from user_register being out of range. Out of bounds error.')
     return user_typed_element_index - declaration.begin_index.value
 
@@ -30,11 +31,9 @@ def compute_real_register_of_array_element(
 
 def generate_code_for_loading_array_element_by_variable(
         identifier: ArrayElementByVariableIdentifier,
-        declared_variables: Dict[str, int],
-        declared_arrays: Dict[str, Tuple[int, int, ArrayDeclaration]]
+        visitor: 'ASTInterpreter'
 ) -> str:
-    return generate_code_for_computing_index_of_array_element_by_variable(identifier, declared_variables,
-                                                                          declared_arrays) + \
+    return generate_code_for_computing_index_of_array_element_by_variable(identifier, visitor) + \
            f'LOADI 0\n'
 
 
@@ -44,11 +43,9 @@ def generate_code_for_loading_array_element_by_variable(
 
 def generate_code_for_storing_array_element_by_variable(
         identifier: ArrayElementByVariableIdentifier,
-        declared_variables: Dict[str, int],
-        declared_arrays: Dict[str, Tuple[int, int, ArrayDeclaration]]
+        visitor: 'ASTInterpreter'
 ) -> str:
-    return generate_code_for_computing_index_of_array_element_by_variable(identifier, declared_variables,
-                                                                          declared_arrays) + \
+    return generate_code_for_computing_index_of_array_element_by_variable(identifier, visitor=visitor) + \
            f'STOREI 0\n'
 
 
@@ -63,11 +60,12 @@ def generate_code_for_storing_array_element_by_variable(
 # and taken from known registers
 def generate_code_for_computing_index_of_array_element_by_variable(
         identifier: ArrayElementByVariableIdentifier,
-        declared_variables: Dict[str, int],
-        declared_arrays: Dict[str, Tuple[int, int, ArrayDeclaration]]
+        visitor: 'ASTInterpreter'
 ) -> str:
-    return generate_number(declared_arrays[identifier.array_identifier][0], 5) + \
-           generate_number(declared_arrays[identifier.array_identifier][2].begin_index.value, 4) + \
-           f'LOAD {declared_variables[identifier.index_identifier]}\n' +\
-               f'SUB 4\n' +\
-               f'ADD 5\n'
+    if identifier.index_identifier in visitor.local_variables:
+        arr_start = visitor.local_variables[identifier.index_identifier]
+    else:
+        arr_start = visitor.declared_variables[identifier.index_identifier]
+    return generate_number(visitor.declared_arrays[identifier.array_identifier][0], 5) + \
+        generate_number(visitor.declared_arrays[identifier.array_identifier][2].begin_index.value, 4) + \
+        f'LOAD {arr_start}\n' + f'SUB 4\n' + f'ADD 5\n'

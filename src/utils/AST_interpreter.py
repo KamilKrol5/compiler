@@ -3,7 +3,8 @@ from typing import Dict, Tuple
 
 from utils.IO_utils import generate_code_for_write_command, generate_code_for_read_command
 from utils.command_utils import write_code_for_if_then_command, write_code_for_if_then_else_command, \
-    write_code_for_assignment_command, write_code_for_while_do_command, write_code_for_do_while_command
+    write_code_for_assignment_command, write_code_for_while_do_command, write_code_for_do_while_command, \
+    write_code_for_for_loop_command
 from utils.expression_utils import generate_code_for_expression
 from utils.label_provider import LabelProvider
 from utils.loop_utils import generate_condition
@@ -15,6 +16,10 @@ from utils.value_utils import generate_code_for_loading_value
 
 
 class LocalVariableAlreadyDeclaredException(Exception):
+    pass
+
+
+class AnAttemptToRemoveNonExistingLocalVariable(Exception):
     pass
 
 
@@ -36,6 +41,7 @@ class ASTInterpreter(Visitor):
         self.declared_variables: Dict[str, int] = dict()
         self.local_variables: Dict[str, int] = dict()
         self.declared_arrays: Dict[str, Tuple[int, int, ArrayDeclaration]] = dict()
+        self.shadowed_variables: Dict[str, List[int]] = dict()
         self.generated_code: List[str] = ['## Program\n']
 
         # label and name generators/providers
@@ -95,11 +101,20 @@ class ASTInterpreter(Visitor):
             new_local_variable_register = self.VARIABLES_START_REGISTER + 1
             self.VARIABLES_START_REGISTER = self.VARIABLES_START_REGISTER + 1  # incrementation right after assignment
 
+        # if there is already variable with the same name defined, it will be shadowed.
+        # To the shadowed_variables dictionary will be added a stack (list) for this variable name.
+        # Previous register stored in declared_arrays will be pushed to the stack and when removing a local variable
+        # it can be assigned again to the variable in declared_arrays dictionary.
+        if variable_name in self.declared_variables.keys():
+            if variable_name not in self.shadowed_variables.keys():
+                self.shadowed_variables[variable_name] = [self.declared_variables[variable_name]]
+            else:
+                self.shadowed_variables[variable_name].append(self.declared_variables[variable_name])
+
         # add local variable to list of all declared variables, name of this variable will be
         # followed by '@local' to avoid conflicts with user declared variables.
         # example: local variable 'i' will be stored as 'i@local' in <self.declared_variables> map
-        self.declared_variables[self.get_local_variable_name_in_declared_variables_map(variable_name)]\
-            = new_local_variable_register
+        self.declared_variables[variable_name] = new_local_variable_register
 
         # a new variable needs also to be added to <self.local_variables> map,
         # it will allow shadowing mechanism in for loop.
@@ -128,10 +143,26 @@ class ASTInterpreter(Visitor):
         declared_variables.'''
 
     def remove_local_variable(self, local_identifier_name: str) -> None:
-        self.declared_variables.pop(self.get_local_variable_name_in_declared_variables_map(local_identifier_name))
-        freed_register: int = self.local_variables.pop(local_identifier_name)
+        if local_identifier_name not in self.declared_variables:
+            raise AnAttemptToRemoveNonExistingLocalVariable(
+                f"An attempt to remove non existing local variable: {local_identifier_name}.")
 
+        if local_identifier_name in self.shadowed_variables:
+            if len(self.shadowed_variables[local_identifier_name]) != 0:
+                prev_reg: int = self.shadowed_variables[local_identifier_name].pop()
+                self.declared_variables[local_identifier_name] = prev_reg
+                if len(self.shadowed_variables[local_identifier_name]) == 0:
+                    self.shadowed_variables.pop(local_identifier_name)
+            else:
+                self.declared_variables.pop(local_identifier_name)
+        else:
+            self.declared_variables.pop(local_identifier_name)
+
+        freed_register: int = self.local_variables.pop(local_identifier_name)
         self.freed_variable_registers.append(freed_register)
+
+    def is_identifier_local_variable(self, identifier: Identifier) -> bool:
+        return isinstance(identifier, VariableIdentifier) and identifier.identifier_name in self.local_variables
 
     def visit_int_number_value(self, int_number_value: 'IntNumberValue') -> int:
         pass
@@ -147,8 +178,7 @@ class ASTInterpreter(Visitor):
     ) -> AbstractIdentifierAccess:
         return DynamicIdentifierAccess(
             generate_code_for_computing_index_of_array_element_by_variable(
-                array_element_by_variable_identifier, self.declared_variables, self.declared_arrays
-            ))
+                array_element_by_variable_identifier, self))
 
     ''' Returns the real register associated with given identifier '''
 
@@ -189,7 +219,7 @@ class ASTInterpreter(Visitor):
     def visit_two_value_condition(self, condition: 'TwoValueCondition'):
         # TODO change it
         self.generated_code.append(
-            generate_condition(condition, self.declared_variables, self.declared_arrays))
+            generate_condition(condition, self))
 
     def visit_commands(self, commands: 'Commands') -> None:
         for c in commands.commands:
@@ -211,38 +241,38 @@ class ASTInterpreter(Visitor):
         write_code_for_do_while_command(do_while_command, self)
 
     def visit_for_command(self, for_command: 'ForCommand') -> None:
-        pass
+        write_code_for_for_loop_command(for_command, self)
 
     def visit_read_command(self, read_command: 'ReadCommand') -> None:
-        # TODO change it
         self.generated_code.append(
-            generate_code_for_read_command(read_command, self.declared_variables, self.declared_arrays))
+            generate_code_for_read_command(read_command, self))
 
     def visit_write_command(self, write_command: 'WriteCommand') -> None:
-        # TODO change it
         self.generated_code.append(
-            generate_code_for_write_command(write_command, self.declared_variables, self.declared_arrays))
+            generate_code_for_write_command(write_command, self))
 
     ''' Writes code for making JUMP to the label specified in JumpCommand.
         Method does not check if given label has any sense or if it has corresponding label in the generated code.'''
 
     def visit_jump_command(self, jump_command: JumpCommand) -> None:
         self.generated_code.append(
-            f'JUMP {jump_command.destination_label}\n'
-        )
+            f'JUMP {jump_command.destination_label}\n')
 
     ''' Writes code for incrementing or decrementing a variable included in increment_decrement_command argument
         as variableIdentifier. It loads this variable, perform operation and saves result in this variable.'''
 
     def visit_increment_decrement_command(self, increment_decrement_command: IncrementDecrementCommand) -> None:
         code: str = generate_code_for_loading_value(
-            IdentifierValue(increment_decrement_command.identifier),
-            self.declared_variables, self.declared_arrays)
+            IdentifierValue(increment_decrement_command.identifier), self)
         if increment_decrement_command.is_decrement:
             code = code + 'DEC\n'
         else:
             code = code + 'INC\n'
-        code = code + f'STORE {self.declared_variables[increment_decrement_command.identifier.identifier_name]}\n'
+
+        if increment_decrement_command.identifier.identifier_name in self.local_variables:
+            code = code + f'STORE {self.local_variables[increment_decrement_command.identifier.identifier_name]}\n'
+        else:
+            code = code + f'STORE {self.declared_variables[increment_decrement_command.identifier.identifier_name]}\n'
         self.generated_code.append(code)
 
     def visit_program(self, program: 'Program') -> str:

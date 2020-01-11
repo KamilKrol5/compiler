@@ -1,6 +1,4 @@
-from typing import Tuple, Dict
-from structures.ast.AST import Value, Identifier, ArrayDeclaration, VariableIdentifier, IntNumberValue, IdentifierValue, \
-    ArrayElementByIntNumberIdentifier, ArrayElementByVariableIdentifier
+from utils.AST_interpreter import *
 from utils.arrays_utils import generate_code_for_loading_array_element_by_variable, \
     compute_real_register_of_array_element
 from utils.math_utils import generate_number
@@ -11,28 +9,32 @@ from utils.math_utils import generate_number
 
 def generate_code_for_loading_value(
         value: Value,
-        declared_variables: Dict[str, int],
-        declared_arrays: Dict[str, Tuple[int, int, ArrayDeclaration]]
+        visitor: 'ASTInterpreter'
 ) -> str:
     if isinstance(value, IntNumberValue):
         return generate_number(value.value)
     elif isinstance(value, IdentifierValue):
         if isinstance(value.identifier, VariableIdentifier):
-            if value.identifier.identifier_name not in declared_variables.keys():
-                ValueError('declared_variables dictionary does not contain key - identifier name provided with '
-                           'write_command`s property - identifier. Variable might not be declared.')
-            return f'LOAD {declared_variables[value.identifier.identifier_name]}\n'
+            if value.identifier.identifier_name in visitor.declared_variables.keys():
+                return f'LOAD {visitor.declared_variables[value.identifier.identifier_name]}\n'
+            elif value.identifier.identifier_name in visitor.local_variables.keys():
+                return f'LOAD {visitor.local_variables[value.identifier.identifier_name]}\n'
+            else:
+                ValueError('Neither declared_variables nor local_variables dictionary '
+                           'does not contain key - identifier name provided with '
+                           'write_command`s property - identifier. '
+                           f'Variable {value.identifier.identifier_name} might not be declared.')
         elif isinstance(value.identifier, ArrayElementByIntNumberIdentifier):
-            if value.identifier.array_identifier not in declared_arrays.keys():
+            if value.identifier.array_identifier not in visitor.declared_arrays.keys():
                 ValueError('declared_arrays dictionary does not contain key - identifier name provided with '
                            'write_command`s property - identifier. Variable might not be declared.')
-            return f'LOAD {compute_real_register_of_array_element(declared_arrays, value.identifier)}\n'
+            return f'LOAD {compute_real_register_of_array_element(visitor.declared_arrays, value.identifier)}\n'
         elif isinstance(value.identifier, ArrayElementByVariableIdentifier):
-            if value.identifier.array_identifier not in declared_arrays.keys():
+            if value.identifier.array_identifier not in visitor.declared_arrays.keys():
                 ValueError('declared_arrays dictionary does not contain key - identifier name provided with '
                            'write_command`s property - identifier. Variable might not be declared.')
             loading_array_element: str = generate_code_for_loading_array_element_by_variable(
-                value.identifier, declared_variables, declared_arrays)
+                value.identifier, visitor)
             return loading_array_element
         else:
             raise ValueError('Unknown instance of Identifier occurred.')
@@ -50,19 +52,23 @@ def generate_code_for_loading_value(
 
 def compute_value_register(
         value: IdentifierValue,
-        declared_variables: Dict[str, int],
-        declared_arrays: Dict[str, Tuple[int, int, ArrayDeclaration]]
+        visitor: 'ASTInterpreter'
 ) -> int:
     if isinstance(value.identifier, VariableIdentifier):
-        if value.identifier.identifier_name not in declared_variables.keys():
-            ValueError('declared_variables dictionary does not contain key - identifier name provided with '
-                       'write_command`s property - identifier. Variable might not be declared.')
-        return declared_variables[value.identifier.identifier_name]
+        if value.identifier.identifier_name in visitor.declared_variables.keys():
+            return visitor.declared_variables[value.identifier.identifier_name]
+        elif value.identifier.identifier_name in visitor.local_variables.keys():
+            return visitor.local_variables[value.identifier.identifier_name]
+        else:
+            ValueError('Neither declared_variables nor local_variables dictionary '
+                       'does not contain key - identifier name provided with '
+                       f'write_command`s property - identifier. '
+                       f'Variable {value.identifier.identifier_name} might not be declared.')
     elif isinstance(value.identifier, ArrayElementByIntNumberIdentifier):
-        if value.identifier.array_identifier not in declared_arrays.keys():
+        if value.identifier.array_identifier not in visitor.declared_arrays.keys():
             ValueError('declared_arrays dictionary does not contain key - identifier name provided with '
                        'write_command`s property - identifier. Variable might not be declared.')
-        return compute_real_register_of_array_element(declared_arrays, value.identifier)
+        return compute_real_register_of_array_element(visitor.declared_arrays, value.identifier)
     elif isinstance(value.identifier, ArrayElementByVariableIdentifier):
         raise ValueError('Cannot compute register of value which identifier is ArrayElementByVariableIdentifier.'
                          'Separate assembly code needs to be created to do so.')
@@ -75,29 +81,34 @@ def compute_value_register(
     Registers used: 0-5'''
 
 
-def load_value_by_identifier(identifier: Identifier, declared_variables: Dict[str, int], dest_register=0,
-                             declared_arrays: Dict[str, Tuple[int, int, ArrayDeclaration]] = {}) -> str:
+def load_value_by_identifier(identifier: Identifier, visitor: 'ASTInterpreter', dest_register=0) -> str:
     result: str = f'## load value by identifier begin\n'
     if isinstance(identifier, VariableIdentifier):
-        if identifier.identifier_name not in declared_variables.keys():
-            raise ValueError('declared_variables dictionary does not contain key - identifier name provided with '
-                             '"identifier" argument. Variable might not be declared.')
-        result = result + f'LOAD {declared_variables[identifier.identifier_name]}\n'
+        if identifier.identifier_name in visitor.declared_variables.keys():
+            register_to_load = visitor.declared_variables[identifier.identifier_name]
+        elif identifier.identifier_name in visitor.local_variables.keys():
+            register_to_load = visitor.local_variables[identifier.identifier_name]
+        else:
+            raise ValueError(f'Neither declared_variables nor local_variables dictionary'
+                             ' does not contain key - identifier name provided with '
+                             f'"identifier" argument. Variable {identifier.identifier_name} might not be declared.')
+        result = result + f'LOAD {register_to_load}\n'
     elif isinstance(identifier, ArrayElementByIntNumberIdentifier):
-        if identifier.array_identifier not in declared_arrays.keys():
+        if identifier.array_identifier not in visitor.declared_arrays.keys():
             raise ValueError('declared_arrays dictionary does not contain key - identifier name provided with '
                              '"identifier" argument. Variable might not be declared.')
-        result = result + f'LOAD {compute_real_register_of_array_element(declared_arrays, identifier)}\n'
+        result = result + f'LOAD {compute_real_register_of_array_element(visitor.declared_arrays, identifier)}\n'
     elif isinstance(identifier, ArrayElementByVariableIdentifier):
-        if identifier.array_identifier not in declared_arrays.keys():
+        if identifier.array_identifier not in visitor.declared_arrays.keys():
             raise ValueError('declared_arrays dictionary does not contain key - identifier name provided with '
                              '"identifier" argument. Variable might not be declared.')
-        if identifier.index_identifier not in declared_variables.keys():
-            raise ValueError('declared_variables dictionary does not contain key - identifier name provided with '
-                             '"identifier" argument. Variable might not be declared.')
+        if identifier.index_identifier not in visitor.declared_variables.keys() and\
+                identifier.index_identifier not in visitor.local_variables.keys():
+            raise ValueError(f'Neither declared_variables nor local_variables dictionary'
+                             ' does not contain key - identifier name provided with '
+                             f'"identifier" argument. Variable {identifier.index_identifier} might not be declared.')
 
-        result = result + generate_code_for_loading_array_element_by_variable(identifier, declared_variables,
-                                                                              declared_arrays)
+        result = result + generate_code_for_loading_array_element_by_variable(identifier, visitor)
 
     if dest_register != 0:
         result = result + f'STORE {dest_register}\n'

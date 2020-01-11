@@ -278,9 +278,10 @@ class WhileDoCommand(Command):
     def accept(self, visitor: Visitor):
         return visitor.visit_while_do_command(self)
 
-    def __init__(self, condition: Condition, commands: Commands):
+    def __init__(self, condition: Condition, commands: Commands, is_user_command=True):
         self.commands = commands
         self.condition = condition
+        self.is_user_command = is_user_command
 
     def to_str_with_indent(self, indent=0) -> str:
         return indent * INDENT + f'<WhileDoCommand[ condition =\n' \

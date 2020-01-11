@@ -16,26 +16,25 @@ class MathOperationsCodeGenerator:
     def _generate_code_for_addition(self, expression: ExpressionHavingTwoValues) -> str:
         if isinstance(expression.valueRight, IdentifierValue):
             return generate_code_for_loading_value(
-                expression.valueLeft, self.visitor.declared_variables, self.visitor.declared_arrays) + \
-                   f'ADD {compute_value_register(expression.valueRight, self.visitor.declared_variables, self.visitor.declared_arrays)}\n'
+                expression.valueLeft, self.visitor) + \
+                   f'ADD {compute_value_register(expression.valueRight, self.visitor)}\n'
         elif isinstance(expression.valueRight, IntNumberValue):
             return generate_code_for_loading_value(
-                expression.valueRight, self.visitor.declared_variables, self.visitor.declared_arrays) + \
+                expression.valueRight, self.visitor) + \
                    'STORE 6\n' + generate_code_for_loading_value(
-                expression.valueLeft, self.visitor.declared_variables, self.visitor.declared_arrays) + 'ADD 6\n'
+                expression.valueLeft, self.visitor) + 'ADD 6\n'
         else:
             raise ValueError('Unknown instance of Value occurred as a rightValue field in provided expression.\n')
 
     def _generate_code_for_subtraction(self, expression: ExpressionHavingTwoValues) -> str:
         if isinstance(expression.valueRight, IdentifierValue):
             return generate_code_for_loading_value(
-                expression.valueLeft, self.visitor.declared_variables, self.visitor.declared_arrays) + \
-                   f'SUB {compute_value_register(expression.valueRight, self.visitor.declared_variables, self.visitor.declared_arrays)}\n'
+                expression.valueLeft, self.visitor) + \
+                   f'SUB {compute_value_register(expression.valueRight, self.visitor)}\n'
         elif isinstance(expression.valueRight, IntNumberValue):
-            return generate_code_for_loading_value(expression.valueRight, self.visitor.declared_variables,
-                                                   self.visitor.declared_arrays) + \
+            return generate_code_for_loading_value(expression.valueRight, self.visitor) + \
                    'STORE 6\n' + generate_code_for_loading_value(
-                expression.valueLeft, self.visitor.declared_variables, self.visitor.declared_arrays) + 'SUB 6\n'
+                expression.valueLeft, self.visitor) + 'SUB 6\n'
         else:
             raise ValueError('Unknown instance of Value occurred as a rightValue field in provided expression.\n')
 
@@ -53,14 +52,12 @@ class MathOperationsCodeGenerator:
         one_reg = self.visitor.declared_variables[self.ONE_VAR_NAME]
 
         result: str = f'SUB 0\n' + f'STORE {res_reg}\n' + \
-                      generate_code_for_loading_value(expression.valueLeft, self.visitor.declared_variables,
-                                                      self.visitor.declared_arrays) + \
+                      generate_code_for_loading_value(expression.valueLeft, self.visitor) + \
                       f'STORE {left_reg}\n' + \
-                      generate_code_for_loading_value(expression.valueRight, self.visitor.declared_variables,
-                                                      self.visitor.declared_arrays) + \
+                      generate_code_for_loading_value(expression.valueRight, self.visitor) + \
                       f'STORE {right_reg}\n' + \
                       f'JPOS {label_r_positive}\n' + negate_number() + f'{label_r_positive}\n' \
-                      f'STORE {right_copy}\n'#if right >0 then nothing
+                      f'STORE {right_copy}\n'  # if right >0 then nothing
         result = result + f'{label_again}\n' + f'LOAD {right_copy}\n' + f'SHIFT {minus_one_reg}\n' + \
             f'SHIFT {one_reg}\n' + compare_values_knowing_registers(0, right_copy) + f'JZERO {label_do_nothing}\n'  # else add left to res
         result = result + f'LOAD {res_reg}\nADD {left_reg}\nSTORE {res_reg}\n{label_do_nothing}\n'
@@ -68,7 +65,7 @@ class MathOperationsCodeGenerator:
             f'LOAD {left_reg}\nSHIFT {one_reg}\nSTORE {left_reg}\n'
         result = result + f'LOAD {right_copy}\nJPOS {label_again}\n' \
             f'LOAD {right_reg}\nJPOS {label_r_positive2}\nLOAD {res_reg}\n' + negate_number() + f'JUMP {end}\n' + \
-                 f'{label_r_positive2}\nLOAD {res_reg}\n{end}\n' #right > 0
+                 f'{label_r_positive2}\nLOAD {res_reg}\n{end}\n'  #right > 0
         # TODO
 
         return result
