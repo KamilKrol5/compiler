@@ -72,7 +72,6 @@ class MathOperationsCodeGenerator:
         result = result + f'LOAD {right_copy}\nJPOS {label_again}\n' \
             f'LOAD {right_reg}\nJPOS {label_r_positive2}\nLOAD {res_reg}\n' + negate_number() + f'JUMP {end}\n' + \
                  f'{label_r_positive2}\nLOAD {res_reg}\n{end}\n'  #right > 0
-        # TODO
 
         return result
 
@@ -83,6 +82,36 @@ class MathOperationsCodeGenerator:
     def _generate_code_for_modulo(self, expression: ExpressionHavingTwoValues) -> str:
         raise NotImplemented()
         # TODO
+
+    # Registers used: 0-1, 10-14
+    @staticmethod
+    def generate_code_for_load_ith_bit(number_reg: int, i_reg: int) -> str:
+        number_shifted_i_reg = 10
+        number_shifted_i_minus_one_reg = 11
+        decremented_i = 12
+        minus_decremented_i = 13
+        negated_i = 14
+        result: str = f'LOAD {i_reg}\n' + negate_number() + f'STORE {negated_i}\n' + \
+            f'INC\nSTORE {minus_decremented_i}\n' + negate_number() + f'STORE {decremented_i}\n' + \
+            f'LOAD {number_reg}\nSHIFT {minus_decremented_i}\nSHIFT {decremented_i}\n' + \
+            f'STORE {number_shifted_i_minus_one_reg}\n' + \
+            f'LOAD {number_reg}\nSHIFT {negated_i}\nSHIFT {i_reg}\nSTORE {number_shifted_i_reg}\n' + \
+            f'LOAD {number_shifted_i_minus_one_reg}\nSUB {number_shifted_i_reg}\nSHIFT {minus_decremented_i}\n'
+
+        return result
+
+    # Registers used: 0, given1 and given2
+    def generate_code_for_log(self, number_reg: int, help_reg_1: int, help_reg_2: int) -> str:
+        num = help_reg_1
+        value = help_reg_2
+        minus_one = self.visitor.declared_variables[self.visitor.MINUS_ONE_VAR_NAME]
+        label_start = self.visitor.label_provider.get_label()
+        label_end = self.visitor.label_provider.get_label()
+        res: str = f'LOAD {number_reg}\nSTORE {num}\nSUB 0\nSTORE {value}\n' + \
+            f'{label_start}\nLOAD {num}\nSHIFT {minus_one}\nSTORE{num}\nJZERO {label_end}\n' + \
+            f'LOAD {value}\nINC\nSTORE {value}\nJUMP {label_start}\n{label_end}\nLOAD {value}\n'
+
+        return res
 
     expressions: Dict[str, Callable] = {
         'PLUS': _generate_code_for_addition,
