@@ -1,6 +1,6 @@
 from utils.AST_interpreter import *
 from utils.loop_utils import compare_values_knowing_registers
-from utils.math_utils import negate_number
+from utils.math_utils import negate_number, generate_number
 from utils.value_utils import generate_code_for_loading_value, compute_value_register
 from typing import Callable
 
@@ -45,6 +45,8 @@ class MathOperationsCodeGenerator:
             raise ValueError('Unknown instance of Value occurred as a rightValue field in provided expression.\n')
 
     def _generate_code_for_multiplication(self, expression: ExpressionHavingTwoValues) -> str:
+        if isinstance(expression.valueLeft, IntNumberValue) and isinstance(expression.valueRight, IntNumberValue):
+            return generate_number(expression.valueLeft.value * expression.valueRight.value, 0)
         left_reg = 6
         right_reg = 7
         right_copy = 11
@@ -78,6 +80,11 @@ class MathOperationsCodeGenerator:
 
     # Registers used: 0-?, 15-21
     def _generate_code_for_division(self, expression: ExpressionHavingTwoValues) -> str:
+        if isinstance(expression.valueLeft, IntNumberValue) and isinstance(expression.valueRight, IntNumberValue):
+            if expression.valueRight.value != 0:
+                return generate_number(expression.valueLeft.value // expression.valueRight.value, 0)
+            else:
+                return generate_number(0)
         divisor = 15
         number = 16
         reminder = 17
