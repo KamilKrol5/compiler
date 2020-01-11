@@ -4,7 +4,7 @@ from utils.AST_interpreter import ASTInterpreter
 from utils.IO_utils import generate_code_for_write_command
 from utils.expression_utils import generate_code_for_expression
 from utils.math_operations_code_generator import MathOperationsCodeGenerator
-from utils.math_utils import generate_number
+from utils.math_utils import generate_number, generate_abs
 from utils.test_utils import expected, get_numbers_from_run_code, flatten
 
 decl_vars = {"c": 32, "d": 64, "e": 123, "f": 120, "g": 121}
@@ -245,6 +245,15 @@ def test_log():
     return code
 
 
+@expected(156, 0, 32)
+def test_abs():
+    cg = MathOperationsCodeGenerator(interpreter)
+    code: str = generate_number(-156, 51) + generate_abs(interpreter.label_provider) + 'PUT\n'
+    code = code + generate_number(0, 50) + generate_abs(interpreter.label_provider) + 'PUT\n'
+    code = code + generate_number(32, 52) + generate_abs(interpreter.label_provider) + 'PUT\n'
+    return code
+
+
 @expected(7, 0, 2, 5, 5000000000000000000000000000, 2, 0, 0, 0)
 def test_divide():
     code: str = ''
@@ -317,7 +326,7 @@ def test_divide():
 if __name__ == '__main__':
     tests = [
         init,
-        test_single_val_expr, test_add, test_sub, test_mul, test_taking_ith_bit,
+        test_single_val_expr, test_add, test_sub, test_mul, test_taking_ith_bit, test_abs,
         test_divide,
         test_log
     ]
