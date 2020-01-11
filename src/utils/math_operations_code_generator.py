@@ -75,7 +75,7 @@ class MathOperationsCodeGenerator:
 
         return result
 
-    # Registers used: 0, 15-21
+    # Registers used: 0-?, 15-21
     def _generate_code_for_division(self, expression: ExpressionHavingTwoValues) -> str:
         divisor = 15
         number = 16

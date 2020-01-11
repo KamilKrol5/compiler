@@ -317,14 +317,13 @@ def test_divide():
 if __name__ == '__main__':
     tests = [
         init,
-        # test_single_val_expr, test_add, test_sub, test_mul, test_taking_ith_bit,
+        test_single_val_expr, test_add, test_sub, test_mul, test_taking_ith_bit,
         test_divide,
-        # test_log
+        test_log
     ]
 
-
-    # interpreter.generated_code.append(generate_number(555, 32) + generate_number(2, 64) + \
-    #                                   generate_number(-2000, 125) + generate_number(-666, 142))
+    interpreter.generated_code.append(generate_number(555, 32) + generate_number(2, 64) + \
+                                      generate_number(-2000, 125) + generate_number(-666, 142))
 
     expected = flatten(t.expected for t in tests)
     interpreter.generated_code.append(''.join([t() for t in tests]))
