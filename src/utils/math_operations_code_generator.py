@@ -1,6 +1,6 @@
 from utils.AST_interpreter import *
 from utils.loop_utils import compare_values_knowing_registers
-from utils.math_utils import negate_number, generate_number
+from utils.math_utils import negate_number, generate_number, generate_abs
 from utils.value_utils import generate_code_for_loading_value, compute_value_register
 from typing import Callable
 
@@ -78,49 +78,79 @@ class MathOperationsCodeGenerator:
 
         return result
 
-    # Registers used: 0-?, 15-21
+    # Registers used: 0-?, 10-23
     def _generate_code_for_division(self, expression: ExpressionHavingTwoValues) -> str:
+        return self._generate_code_for_division_or_modulo(expression, is_modulo=False)
+
+    # Registers used: 0-?, 10-23
+    def _generate_code_for_modulo(self, expression: ExpressionHavingTwoValues) -> str:
+        return self._generate_code_for_division_or_modulo(expression, is_modulo=True)
+
+    # Registers used: 0-?, 10-23
+    def _generate_code_for_division_or_modulo(self, expression: ExpressionHavingTwoValues, is_modulo: bool) -> str:
         if isinstance(expression.valueLeft, IntNumberValue) and isinstance(expression.valueRight, IntNumberValue):
             if expression.valueRight.value != 0:
                 return generate_number(expression.valueLeft.value // expression.valueRight.value, 0)
             else:
                 return generate_number(0)
-        divisor = 15
-        number = 16
+
+        divisor = 22
+        divisor_abs = 15
+        number = 23
+        number_abs = 16
         reminder = 17
         quotient = 18
         counter = 19
         number_copy = 20
+        register_to_return = reminder if is_modulo else quotient
+
         minus_one = self.visitor.declared_variables[self.MINUS_ONE_VAR_NAME]
         one = self.visitor.declared_variables[self.ONE_VAR_NAME]
+
         label_zero = self.visitor.label_provider.get_label()
         label_start = self.visitor.label_provider.get_label()
         label_end = self.visitor.label_provider.get_label()
         label_if = self.visitor.label_provider.get_label()
         label_end2 = self.visitor.label_provider.get_label()
+        label_divisor_neg = self.visitor.label_provider.get_label()
+        label_number_neg = self.visitor.label_provider.get_label()
+        label_both_neg = self.visitor.label_provider.get_label()
+        label_finish = self.visitor.label_provider.get_label()
 
-        code_0: str = generate_code_for_loading_value(expression.valueRight, self.visitor) + \
+        code_1: str = f''
+
+        code_2: str = generate_code_for_loading_value(expression.valueRight, self.visitor) + \
             f'STORE {divisor}\nJZERO {label_zero}\nSUB 0\nSTORE {reminder}\nSTORE {quotient}\n' + \
             generate_code_for_loading_value(expression.valueLeft, self.visitor) + \
-            f'STORE{number}\nSHIFT {one}\nSTORE {number_copy}\n' + self.generate_code_for_log(number, counter, 21) + \
-            f'INC\nSTORE {counter}\n'   # counter = log(n) + 1
-        code_1: str = f'SUB {divisor}\n' + \
-            f'{label_start}\nLOAD {number_copy}\nSHIFT {minus_one}\nSTORE {number_copy}\n'  # n_copy = number >> 1
+            f'STORE{number}\n' + generate_abs(self.visitor.label_provider) + f'STORE{number_abs}\n' + \
+            f'LOAD{divisor}\n' + generate_abs(self.visitor.label_provider) + f'STORE{divisor_abs}\n'
+        code_2 = code_2 + f'LOAD {number_abs}\nSHIFT {one}\nSTORE {number_copy}\n' + \
+            self.generate_code_for_log(number_abs, counter, 21) + \
+            f'INC\nSTORE {counter}\n'  # counter = log(n) + 1
+        code_3: str = f'SUB {divisor_abs}\n' + \
+            f'{label_start}\nLOAD {number_copy}\nSHIFT {minus_one}\nSTORE {number_copy}\n'  # n_copy = number_abs >> 1
 
-        code_2: str = f'JZERO {label_end}\nLOAD{reminder}\nSHIFT {one}\nSTORE {reminder}\n' + \
-            self.generate_code_for_load_ith_bit(number, counter) + f'ADD {reminder}\nSTORE {reminder}\n' + \
-            compare_values_knowing_registers(reminder, divisor) + f'JNEG {label_if}\n' + \
+        code_4: str = f'JZERO {label_end}\nLOAD{reminder}\nSHIFT {one}\nSTORE {reminder}\n' + \
+            self.generate_code_for_load_ith_bit(number_abs, counter) + f'ADD {reminder}\nSTORE {reminder}\n' + \
+            compare_values_knowing_registers(reminder, divisor_abs) + f'JNEG {label_if}\n' + \
             f'STORE {reminder}\nLOAD {quotient}\nINC\nSTORE {quotient}\n' + \
             f'{label_if}\nLOAD {quotient}\nSHIFT {one}\nSTORE {quotient}\n' + \
             f'LOAD {counter}\nDEC\nSTORE {counter}\nJUMP {label_start}\n'
 
-        code_3 = f'{label_zero}\nSUB 0\nJUMP {label_end2}\n{label_end}\nLOAD {quotient}\n' + \
-            f'SHIFT {minus_one}\n{label_end2}\n'
-        return code_0 + code_1 + code_2 + code_3
-
-    def _generate_code_for_modulo(self, expression: ExpressionHavingTwoValues) -> str:
-        raise NotImplemented()
-        # TODO
+        code_5 = f'{label_zero}\nSUB 0\nJUMP {label_end2}\n{label_end}\nLOAD {quotient}\n' + \
+                 f'SHIFT {minus_one}\nSTORE {quotient}\n{label_end2}\n'
+        #  return
+        code_6 = f'LOAD {divisor}\nJNEG {label_divisor_neg}\n'  # here divisor is positive so reminder will be positive
+        code_6 = code_6 + f'LOAD {number}\nJNEG {label_number_neg}\nJUMP {label_finish}\n' + \
+            f'{label_divisor_neg}\nLOAD {number}\nJNEG {label_both_neg}\n' + \
+            f'LOAD {quotient}\nINC\n' + negate_number() + f'STORE {quotient}\nLOAD {reminder}' + \
+            f'SUB {divisor_abs}\nSTORE {reminder}\nJUMP {label_finish}\n' + \
+            f'{label_number_neg}'  # here divisor is positive and number is negative
+        code_6 = code_6 + f'LOAD {quotient}\nINC\n' + negate_number() + f'STORE {quotient}\n' + \
+            f'LOAD {divisor_abs}\nSUB {reminder}\nSTORE {reminder}\nJUMP {label_finish}\n{label_both_neg}\n' + \
+            f'LOAD {reminder}\n' + negate_number() + f'JUMP {label_finish}' + \
+            f'{label_finish}\nLOAD {register_to_return}\n'
+        return code_1 + code_2 + code_3 + code_4 + code_5 + code_6
 
     # Registers used: 0-1, 10-14
     @staticmethod
