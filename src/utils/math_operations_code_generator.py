@@ -75,9 +75,40 @@ class MathOperationsCodeGenerator:
 
         return result
 
+    # Registers used: 0, 15-21
     def _generate_code_for_division(self, expression: ExpressionHavingTwoValues) -> str:
-        raise NotImplemented()
-        # TODO
+        divisor = 15
+        number = 16
+        reminder = 17
+        quotient = 18
+        counter = 19
+        number_copy = 20
+        minus_one = self.visitor.declared_variables[self.MINUS_ONE_VAR_NAME]
+        one = self.visitor.declared_variables[self.ONE_VAR_NAME]
+        label_zero = self.visitor.label_provider.get_label()
+        label_start = self.visitor.label_provider.get_label()
+        label_end = self.visitor.label_provider.get_label()
+        label_if = self.visitor.label_provider.get_label()
+        label_end2 = self.visitor.label_provider.get_label()
+
+        code_0: str = generate_code_for_loading_value(expression.valueRight, self.visitor) + \
+            f'STORE {divisor}\nJZERO {label_zero}\nSUB 0\nSTORE {reminder}\nSTORE {quotient}\n' + \
+            generate_code_for_loading_value(expression.valueLeft, self.visitor) + \
+            f'STORE{number}\nSHIFT {one}\nSTORE {number_copy}\n' + self.generate_code_for_log(number, counter, 21) + \
+            f'INC\nSTORE {counter}\n'   # counter = log(n) + 1
+        code_1: str = f'SUB {divisor}\n' + \
+            f'{label_start}\nLOAD {number_copy}\nSHIFT {minus_one}\nSTORE {number_copy}\n'  # n_copy = number >> 1
+
+        code_2: str = f'JZERO {label_end}\nLOAD{reminder}\nSHIFT {one}\nSTORE {reminder}\n' + \
+            self.generate_code_for_load_ith_bit(number, counter) + f'ADD {reminder}\nSTORE {reminder}\n' + \
+            compare_values_knowing_registers(reminder, divisor) + f'JNEG {label_if}\n' + \
+            f'STORE {reminder}\nLOAD {quotient}\nINC\nSTORE {quotient}\n' + \
+            f'{label_if}\nLOAD {quotient}\nSHIFT {one}\nSTORE {quotient}\n' + \
+            f'LOAD {counter}\nDEC\nSTORE {counter}\nJUMP {label_start}\n'
+
+        code_3 = f'{label_zero}\nSUB 0\nJUMP {label_end2}\n{label_end}\nLOAD {quotient}\n' + \
+            f'SHIFT {minus_one}\n{label_end2}\n'
+        return code_0 + code_1 + code_2 + code_3
 
     def _generate_code_for_modulo(self, expression: ExpressionHavingTwoValues) -> str:
         raise NotImplemented()
