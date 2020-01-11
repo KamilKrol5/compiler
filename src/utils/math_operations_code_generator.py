@@ -65,13 +65,14 @@ class MathOperationsCodeGenerator:
                       f'JPOS {label_r_positive}\n' + negate_number() + f'{label_r_positive}\n' \
                       f'STORE {right_copy}\n'  # if right >0 then nothing
         result = result + f'{label_again}\n' + f'LOAD {right_copy}\n' + f'SHIFT {minus_one_reg}\n' + \
-            f'SHIFT {one_reg}\n' + compare_values_knowing_registers(0, right_copy) + f'JZERO {label_do_nothing}\n'  # else add left to res
+            f'SHIFT {one_reg}\n' + compare_values_knowing_registers(0, right_copy) + f'JZERO {label_do_nothing}\n'
+        # else add left to res ^
         result = result + f'LOAD {res_reg}\nADD {left_reg}\nSTORE {res_reg}\n{label_do_nothing}\n'
         result = result + f'LOAD {right_copy}\nSHIFT {minus_one_reg}\nSTORE {right_copy}\n' \
             f'LOAD {left_reg}\nSHIFT {one_reg}\nSTORE {left_reg}\n'
         result = result + f'LOAD {right_copy}\nJPOS {label_again}\n' \
             f'LOAD {right_reg}\nJPOS {label_r_positive2}\nLOAD {res_reg}\n' + negate_number() + f'JUMP {end}\n' + \
-                 f'{label_r_positive2}\nLOAD {res_reg}\n{end}\n'  #right > 0
+            f'{label_r_positive2}\nLOAD {res_reg}\n{end}\n'  # right > 0
 
         return result
 
