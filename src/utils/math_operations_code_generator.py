@@ -15,9 +15,15 @@ class MathOperationsCodeGenerator:
 
     def _generate_code_for_addition(self, expression: ExpressionHavingTwoValues) -> str:
         if isinstance(expression.valueRight, IdentifierValue):
-            return generate_code_for_loading_value(
-                expression.valueLeft, self.visitor) + \
-                   f'ADD {compute_value_register(expression.valueRight, self.visitor)}\n'
+            if isinstance(expression.valueRight.identifier, ArrayElementByVariableIdentifier):  # dynamic
+                return generate_code_for_loading_value(
+                    expression.valueRight, self.visitor) + \
+                       'STORE 6\n' + generate_code_for_loading_value(
+                    expression.valueLeft, self.visitor) + 'ADD 6\n'
+            else:
+                return generate_code_for_loading_value(
+                    expression.valueLeft, self.visitor) + \
+                       f'ADD {compute_value_register(expression.valueRight, self.visitor)}\n'
         elif isinstance(expression.valueRight, IntNumberValue):
             return generate_code_for_loading_value(
                 expression.valueRight, self.visitor) + \

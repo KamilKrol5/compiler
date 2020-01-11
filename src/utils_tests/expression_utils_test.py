@@ -1,11 +1,12 @@
 from pprint import pprint
 from structures.ast.AST import *
 from utils.AST_interpreter import ASTInterpreter
-from utils.expression_utils import generate_code_for_expression, ArrayDeclaration
+from utils.IO_utils import generate_code_for_write_command
+from utils.expression_utils import generate_code_for_expression
 from utils.math_utils import generate_number
 from utils.test_utils import expected, get_numbers_from_run_code, flatten
 
-decl_vars = {"c": 32, "d": 64}
+decl_vars = {"c": 32, "d": 64, "e": 123, "f": 120}
 decl_arrays = {
     'arr': (120, 135, ArrayDeclaration('arr', IntNumberValue(-20), IntNumberValue(15))),
     'brr': (256, 266, ArrayDeclaration('brr', IntNumberValue(-5), IntNumberValue(5)))}
@@ -14,6 +15,31 @@ program = Program(Declarations([]), Commands([]))
 interpreter = ASTInterpreter(program)
 interpreter.declared_variables.update(decl_vars)
 interpreter.declared_arrays.update(decl_arrays)
+
+
+@expected(10, 20, -15, -14, 10, 20)
+def init() -> str:
+    expr1 = ExpressionHavingOneValue(IntNumberValue(10))
+    expr2 = ExpressionHavingOneValue(IntNumberValue(20))
+    expr3 = ExpressionHavingOneValue(IntNumberValue(-15))
+    expr4 = ExpressionHavingOneValue(IntNumberValue(-14))
+    code: str = generate_code_for_expression(expr1, interpreter) + f'STORE {decl_arrays["arr"][0] + 5 }\n'  #arr[-15]=10
+    code = code + generate_code_for_expression(expr2, interpreter) + f'STORE {decl_arrays["arr"][0] + 6 }\n'  #arr[-14]=20
+    code = code + generate_code_for_expression(expr3, interpreter) + f'STORE {decl_vars["e"]}\n'  # e = -15
+    code = code + generate_code_for_expression(expr4, interpreter) + f'STORE {decl_vars["f"]}\n'  # f = -14
+    code = code + generate_code_for_write_command(
+        WriteCommand(IdentifierValue(ArrayElementByIntNumberIdentifier('arr', IntNumberValue(-15)))), interpreter)
+    code = code + generate_code_for_write_command(
+        WriteCommand(IdentifierValue(ArrayElementByIntNumberIdentifier('arr', IntNumberValue(-14)))), interpreter)
+    code = code + generate_code_for_write_command(
+        WriteCommand(IdentifierValue(VariableIdentifier('e'))), interpreter)
+    code = code + generate_code_for_write_command(
+        WriteCommand(IdentifierValue(VariableIdentifier('f'))), interpreter)
+    code = code + generate_code_for_write_command(
+        WriteCommand(IdentifierValue(ArrayElementByVariableIdentifier('arr', 'e'))), interpreter)
+    code = code + generate_code_for_write_command(
+        WriteCommand(IdentifierValue(ArrayElementByVariableIdentifier('arr', 'f'))), interpreter)
+    return code
 
 
 @expected(111, 2, 555)
@@ -33,7 +59,7 @@ def test_single_val_expr():
     return code
 
 
-@expected(-58, 551, 557, -6)
+@expected(-58, 551, 557, -6, 30, 30)
 def test_add():
     code: str = ''
     code = code + generate_code_for_expression(
@@ -64,7 +90,20 @@ def test_add():
             'PLUS'
         ), visitor=interpreter
     ) + 'PUT\n'
-
+    code = code + generate_code_for_expression(
+        ExpressionHavingTwoValues(
+            IdentifierValue(ArrayElementByIntNumberIdentifier('arr', IntNumberValue(-14))),
+            IdentifierValue(ArrayElementByIntNumberIdentifier('arr', IntNumberValue(-15))),
+            'PLUS'
+        ), visitor=interpreter
+    ) + 'PUT\n'
+    code = code + generate_code_for_expression(
+        ExpressionHavingTwoValues(
+            IdentifierValue(ArrayElementByVariableIdentifier('arr', 'e')),
+            IdentifierValue(ArrayElementByVariableIdentifier('arr', 'f')),
+            'PLUS'
+        ), visitor=interpreter
+    ) + 'PUT\n'
     return code
 
 
@@ -103,7 +142,7 @@ def test_sub():
     return code
 
 
-@expected(-120, -2220, 1110, -42, 42, 42, -42)
+@expected(-120, -2220, 1110, -42, 42, 42, -42, 200, 200)
 def test_mul():
     code: str = generate_code_for_expression(
         ExpressionHavingTwoValues(
@@ -154,12 +193,26 @@ def test_mul():
             'TIMES'
         ), visitor=interpreter
     ) + 'PUT\n'
+    code = code + generate_code_for_expression(
+        ExpressionHavingTwoValues(
+            IdentifierValue(ArrayElementByIntNumberIdentifier('arr', IntNumberValue(-14))),
+            IdentifierValue(ArrayElementByIntNumberIdentifier('arr', IntNumberValue(-15))),
+            'TIMES'
+        ), visitor=interpreter
+    ) + 'PUT\n'
+    code = code + generate_code_for_expression(
+        ExpressionHavingTwoValues(
+            IdentifierValue(ArrayElementByVariableIdentifier('arr', 'e')),
+            IdentifierValue(ArrayElementByVariableIdentifier('arr', 'f')),
+            'TIMES'
+        ), visitor=interpreter
+    ) + 'PUT\n'
 
     return code
 
 
 if __name__ == '__main__':
-    tests = [test_single_val_expr, test_add, test_sub, test_mul]
+    tests = [init, test_single_val_expr, test_add, test_sub, test_mul]
 
     interpreter.generated_code.append(generate_number(555, 32) + generate_number(2, 64) + \
                                       generate_number(-2000, 125) + generate_number(-666, 142))
@@ -168,7 +221,8 @@ if __name__ == '__main__':
     interpreter.generated_code.append(''.join([t() for t in tests]))
     code_all = program.accept(interpreter)
     returned: List[int] = get_numbers_from_run_code(code_all, 'expr_test.txt', 'exe_expr_test.txt')
-
+    pprint(f'Expected: {expected}')
+    pprint(f'Returned: {returned}')
     print('unmatched: (result number, (expected, returned))')
     pprint(list((i, (e, r)) for i, (e, r) in enumerate(zip(expected, returned)) if e != r))
     assert expected == returned

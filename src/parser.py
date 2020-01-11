@@ -1,4 +1,5 @@
 import sys
+from pprint import pprint
 
 from sly import Parser
 
@@ -135,21 +136,24 @@ if __name__ == '__main__':
     lexer = CompilerLexer()
     parser = CompilerParser()
 
-    src_file = 'test3.imp'
-    if len(sys.argv) == 2:
+    src_file = 'test_programs/test3.imp'
+    if len(sys.argv) >= 2:
         src_file = sys.argv[1]
 
     with open(src_file, 'r') as file:
         data = file.read()
         # print(list(lexer.tokenize(data)))
-        result: Program = parser.parse(lexer.tokenize(data))
+        tokens = lexer.tokenize(data)
+        # pprint(list(tokens))
+        result: Program = parser.parse(tokens)
         print(result)
         interpreter = ASTInterpreter(result)
         code = result.accept(visitor=interpreter)
 
-        if len(sys.argv) == 3 and sys.argv[2] == '--run':
+        if len(sys.argv) >= 3 and sys.argv[2] == '--run':
             print('RUNNING CODE')
-            out = run_code(code, f'{src_file}.intermediate', f'exe_{src_file}')
+            out = run_code(code, f'{src_file}.intermediate', f'exe_{src_file}', *sys.argv[3:],
+                           path_to_vm='../../maszyna_wirtualna/maszyna-wirtualna-cln')
             print(out)
         else:
             write_to_file(f"{src_file}.out", code)
