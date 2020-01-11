@@ -14,7 +14,7 @@ class CompilerLexer(Lexer):
 
     literals = {'(', ')', ';', ',', ':'}
 
-    ignore = r' \t'
+    ignore = ' \t'
     ignore_comment = r'\[[^\]]*\]'
 
     IDENTIFIER = r'[_a-z]+'
