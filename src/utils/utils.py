@@ -15,3 +15,11 @@ def write_to_str(text: str, append_halt=True) -> str:
 # no registers used
 def clean_p0() -> str:
     return 'SUB 0\n'
+
+
+def registers_used(*args):
+    def decorator(f):
+        f.registers_used = args
+        return f
+    return decorator
+
