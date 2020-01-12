@@ -16,7 +16,7 @@ def generate_abs(label_provider: LabelProvider) -> str:
 # Negates number which is in register 0 (p0)
 # Registers used: 0-1
 def negate_number() -> str:
-    return f'STORE 1\n' + f'SUB 0\nSUB 1\n'
+    return f'STORE 1\nSUB 0\nSUB 1\n'
 
 
 # Generates constant value and stores it in destination_register

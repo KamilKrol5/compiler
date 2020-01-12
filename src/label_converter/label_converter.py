@@ -13,6 +13,8 @@ def convert_labels_to_registers(filename='filename.txt', output_filename='imp_ex
         for line in lines:
             if re.match(r'^(##).*\n', line):
                 continue
+            if re.match(r'^\n', line):
+                continue
             if line.startswith('%label_'):
                 labels_dest[line[1:-1]] = line_counter
             else:
