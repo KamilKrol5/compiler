@@ -23,12 +23,23 @@ class AnAttemptToRemoveNonExistingLocalVariable(Exception):
     pass
 
 
+class DefaultConstant:
+    def __init__(self, name: str, value: int):
+        self.name: str = name
+        self.value: int = value
+
+
 class ASTInterpreter(Visitor):
     VARIABLES_START_REGISTER = 100
     LOCAL_VAR_SUFFIX = '@local'
     ONE_VAR_NAME = '@one'
     MINUS_ONE_VAR_NAME = '@minus_one'
     ZERO_VAR_NAME = '@zero'
+    default_constants = [
+        DefaultConstant(ONE_VAR_NAME, 1),
+        DefaultConstant(MINUS_ONE_VAR_NAME, -1),
+        DefaultConstant(ZERO_VAR_NAME, 0),
+    ]
     freed_variable_registers: List[int] = list()
 
     def __init__(self, program: Program):
@@ -49,7 +60,7 @@ class ASTInterpreter(Visitor):
         self.loop_name_provider: LabelProvider = LabelProvider('#loop')
 
         self._assign_registers_to_variables()
-        self.generate_one_and_minus_one()
+        self.generate_default_constants()
 
     def _assign_registers_to_variables(self):
         # assign registers to variables
@@ -70,11 +81,13 @@ class ASTInterpreter(Visitor):
             self.VARIABLES_START_REGISTER = self.VARIABLES_START_REGISTER + 1
         print(f'Variables start register: {self.VARIABLES_START_REGISTER}')
 
-    def generate_one_and_minus_one(self):
-        self.generated_code.append(
-            generate_number(1, destination_register=self.declared_variables[self.ONE_VAR_NAME]) +
-            generate_number(0, destination_register=self.declared_variables[self.ZERO_VAR_NAME]) +
-            generate_number(-1, destination_register=self.declared_variables[self.MINUS_ONE_VAR_NAME]))
+    ''' Generates default constants and stores them in specified registers.
+        Names of the constants need to be present in declared_variables before call of this method.'''
+
+    def generate_default_constants(self):
+        for const in self.default_constants:
+            self.generated_code.append(
+                generate_number(const.value, destination_register=self.declared_variables[const.name]))
 
     ''' Returns local variable key in the declared_variables map.
         Example: call with argument 'i' will return 'i@local'.'''
