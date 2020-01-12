@@ -124,62 +124,62 @@ class MathOperationsCodeGenerator:
         code_1: List[str] = [
             f'## BEGIN div',
             generate_code_for_loading_value(expression.valueRight, self.visitor),
-            f'STORE {divisor}',
-            f'JZERO {label_zero}',
+            f'STORE {divisor}',  # save right value
+            f'JZERO {label_zero}',  # if right value is 0, we can end returning 0
             f'SUB 0',
             f'STORE {reminder}',
-            f'STORE {quotient}',
+            f'STORE {quotient}',  # quotient = 0, reminder = 0
             generate_code_for_loading_value(expression.valueLeft, self.visitor),
-            f'STORE{number}',
+            f'STORE{number}',  # save left value
             generate_abs(self.visitor.label_provider),
             f'STORE{number_abs}',
             f'LOAD{divisor}',
             generate_abs(self.visitor.label_provider),
-            f'STORE{divisor_abs}',
+            f'STORE{divisor_abs}',  # division uses only positive numbers, so abs was called
             f'LOAD {number_abs}',
             f'SHIFT {one}',
             f'STORE {number_copy}',
-            self.generate_code_for_log(number_abs, counter, 21),
+            self.generate_code_for_log(number_abs, counter, 21),  # we iterate log(n) + 1 times
             f'INC',
             f'STORE {counter}',  # counter = log(n) + 1
         ]
         code_2: List[str] = [
-            f'SUB {divisor_abs}',
-            f'{label_start}',
+            f'{label_start}',  # beginning of a loop
             f'LOAD {number_copy}',
             f'SHIFT {minus_one}',
             f'STORE {number_copy}',  # n_copy = number_abs >> 1
             f'JZERO {label_end}',
             f'LOAD {reminder}',
             f'SHIFT {one}',
-            f'STORE {reminder}',
+            f'STORE {reminder}',  # reminder = reminder << 1
             self.generate_code_for_load_ith_bit(number_abs, counter),
             f'ADD {reminder}',
-            f'STORE {reminder}',
+            f'STORE {reminder}',  # reminder = reminder + counter'th bit of number; R(0) = N(counter)
             compare_values_knowing_registers(reminder, divisor_abs),
-            f'JNEG {label_if}',
-            f'STORE {reminder}',
+            f'JNEG {label_if}',  # if reminder >= divisor_abs, if not jump to label_if
+            f'STORE {reminder}',  # reminder = reminder - divisor_abs
             f'LOAD {quotient}',
             f'INC',
-            f'STORE {quotient}',
+            f'STORE {quotient}',  # quotient++
             f'{label_if}',
             f'LOAD {quotient}',
             f'SHIFT {one}',
-            f'STORE {quotient}',
+            f'STORE {quotient}',  # quotient << 1
             f'LOAD {counter}',
             f'DEC',
-            f'STORE {counter}',
+            f'STORE {counter}',  # counter--
             f'JUMP {label_start}',
         ]
 
         code_3 = [
             f'{label_zero}',
-            f'SUB 0',
-            f'JUMP {label_end2}',
-            f'{label_end}',
+            f'SUB 0',  # load zero
+            f'JUMP {label_end2}',  # work is done
+            f'{label_end}',  # end of loop, almost ready to return values
             f'LOAD {quotient}',
             f'SHIFT {minus_one}',
-            f'STORE {quotient}',
+            f'STORE {quotient}',  # quotient = quotient >> 1,
+            # because in the last iteration it was shifted left unnecessarily
         ]
         #  return
         code_4 = [
