@@ -120,67 +120,108 @@ class MathOperationsCodeGenerator:
         label_finish = self.visitor.label_provider.get_label()
         label_finish1 = self.visitor.label_provider.get_label()
         label_finish2 = self.visitor.label_provider.get_label()
-        label_finish3 = self.visitor.label_provider.get_label()
 
-        code_1: str = f'## BEGIN div\n'
+        code_1: List[str] = [
+            f'## BEGIN div',
+            generate_code_for_loading_value(expression.valueRight, self.visitor),
+            f'STORE {divisor}',
+            f'JZERO {label_zero}',
+            f'SUB 0',
+            f'STORE {reminder}',
+            f'STORE {quotient}',
+            generate_code_for_loading_value(expression.valueLeft, self.visitor),
+            f'STORE{number}',
+            generate_abs(self.visitor.label_provider),
+            f'STORE{number_abs}',
+            f'LOAD{divisor}',
+            generate_abs(self.visitor.label_provider),
+            f'STORE{divisor_abs}',
+            f'LOAD {number_abs}',
+            f'SHIFT {one}',
+            f'STORE {number_copy}',
+            self.generate_code_for_log(number_abs, counter, 21),
+            f'INC',
+            f'STORE {counter}',  # counter = log(n) + 1
+        ]
+        code_2: List[str] = [
+            f'SUB {divisor_abs}',
+            f'{label_start}',
+            f'LOAD {number_copy}',
+            f'SHIFT {minus_one}',
+            f'STORE {number_copy}',  # n_copy = number_abs >> 1
+            f'JZERO {label_end}',
+            f'LOAD {reminder}',
+            f'SHIFT {one}',
+            f'STORE {reminder}',
+            self.generate_code_for_load_ith_bit(number_abs, counter),
+            f'ADD {reminder}',
+            f'STORE {reminder}',
+            compare_values_knowing_registers(reminder, divisor_abs),
+            f'JNEG {label_if}',
+            f'STORE {reminder}',
+            f'LOAD {quotient}',
+            f'INC',
+            f'STORE {quotient}',
+            f'{label_if}',
+            f'LOAD {quotient}',
+            f'SHIFT {one}',
+            f'STORE {quotient}',
+            f'LOAD {counter}',
+            f'DEC',
+            f'STORE {counter}',
+            f'JUMP {label_start}',
+        ]
 
-        code_2: str = generate_code_for_loading_value(expression.valueRight, self.visitor) + \
-            f'STORE {divisor}\nJZERO {label_zero}\nSUB 0\nSTORE {reminder}\nSTORE {quotient}\n' + \
-            generate_code_for_loading_value(expression.valueLeft, self.visitor) + \
-            f'STORE{number}\n' + generate_abs(self.visitor.label_provider) + f'STORE{number_abs}\n' + \
-            f'LOAD{divisor}\n' + generate_abs(self.visitor.label_provider) + f'STORE{divisor_abs}\n'
-        code_2 = code_2 + f'LOAD {number_abs}\nSHIFT {one}\nSTORE {number_copy}\n' + \
-            self.generate_code_for_log(number_abs, counter, 21) + \
-            f'INC\nSTORE {counter}\n'  # counter = log(n) + 1
-        code_3: str = f'SUB {divisor_abs}\n' + \
-            f'{label_start}\nLOAD {number_copy}\nSHIFT {minus_one}\nSTORE {number_copy}\n'  # n_copy = number_abs >> 1
-
-        code_4: str = f'JZERO {label_end}\nLOAD{reminder}\nSHIFT {one}\nSTORE {reminder}\n' + \
-            self.generate_code_for_load_ith_bit(number_abs, counter) + f'ADD {reminder}\nSTORE {reminder}\n' + \
-            compare_values_knowing_registers(reminder, divisor_abs) + f'JNEG {label_if}\n' + \
-            f'STORE {reminder}\nLOAD {quotient}\nINC\nSTORE {quotient}\n' + \
-            f'{label_if}\nLOAD {quotient}\nSHIFT {one}\nSTORE {quotient}\n' + \
-            f'LOAD {counter}\nDEC\nSTORE {counter}\nJUMP {label_start}\n'
-
-        code_5 = f'{label_zero}\nSUB 0\nJUMP {label_end2}\n{label_end}\nLOAD {quotient}\n' + \
-                 f'SHIFT {minus_one}\nSTORE {quotient}\n'
+        code_3 = [
+            f'{label_zero}',
+            f'SUB 0',
+            f'JUMP {label_end2}',
+            f'{label_end}',
+            f'LOAD {quotient}',
+            f'SHIFT {minus_one}',
+            f'STORE {quotient}',
+        ]
         #  return
-        code_6 = [f'LOAD {divisor}',
-                  f'JNEG {label_divisor_neg}',  # here divisor is positive so reminder will be positive
-                  f'LOAD {number}',
-                  f'JNEG {label_number_neg}',
-                  f'JUMP {label_finish}',
-                  f'{label_divisor_neg}',
-                  f'LOAD {number}',
-                  f'JNEG {label_both_neg}',
-                  f'LOAD {quotient}',
-                  f'INC',
-                  negate_number(),
-                  f'STORE {quotient}',
-                  f'LOAD {reminder}',
-                  f'SUB {divisor_abs}',
-                  f'STORE {reminder}',
-                  f'JUMP {label_finish1}',
-                  f'{label_number_neg}',  # here divisor is positive and number is negative
-                  f'LOAD {quotient}',
-                  f'INC',
-                  negate_number(),
-                  f'STORE {quotient}',
-                  f'LOAD {divisor_abs}',
-                  f'SUB {reminder}',
-                  f'STORE {reminder}',
-                  f'JUMP {label_finish2}',
-                  f'{label_both_neg}',
-                  f'LOAD {reminder}',
-                  negate_number(),
-                  f'STORE {reminder}',
-                  f'{label_finish}',
-                  f'{label_finish1}',
-                  f'{label_finish2}',
-                  f'LOAD {register_to_return}',
-                  f'{label_end2}',
-                  ]
-        return code_1 + code_2 + code_3 + code_4 + code_5 + '\n'.join(code_6) + '\n## END div\n'
+        code_4 = [
+            f'LOAD {divisor}',
+            f'JNEG {label_divisor_neg}',  # here divisor is positive so reminder will be positive
+            f'LOAD {number}',
+            f'JNEG {label_number_neg}',
+            f'JUMP {label_finish}',
+            f'{label_divisor_neg}',
+            f'LOAD {number}',
+            f'JNEG {label_both_neg}',
+            f'LOAD {quotient}',
+            f'INC',
+            negate_number(),
+            f'STORE {quotient}',
+            f'LOAD {reminder}',
+            f'SUB {divisor_abs}',
+            f'STORE {reminder}',
+            f'JUMP {label_finish1}',
+            f'{label_number_neg}',  # here divisor is positive and number is negative
+            f'LOAD {quotient}',
+            f'INC',
+            negate_number(),
+            f'STORE {quotient}',
+            f'LOAD {divisor_abs}',
+            f'SUB {reminder}',
+            f'STORE {reminder}',
+            f'JUMP {label_finish2}',
+            f'{label_both_neg}',
+            f'LOAD {reminder}',
+            negate_number(),
+            f'STORE {reminder}',
+            f'{label_finish}',
+            f'{label_finish1}',
+            f'{label_finish2}',
+            f'LOAD {register_to_return}',
+            f'{label_end2}',
+        ]
+        return '\n'.join(code_1) + '\n' + \
+               '\n'.join(code_2) + '\n' + \
+               '\n'.join(code_3) + '\n' + \
+               '\n'.join(code_4) + '\n## END div\n'
 
     # Registers used: 0-1, 10-14
     @staticmethod
@@ -190,14 +231,28 @@ class MathOperationsCodeGenerator:
         decremented_i = 12
         minus_decremented_i = 13
         negated_i = 14
-        result: str = f'LOAD {i_reg}\n' + negate_number() + f'STORE {negated_i}\n' + \
-            f'INC\nSTORE {minus_decremented_i}\n' + negate_number() + f'STORE {decremented_i}\n' + \
-            f'LOAD {number_reg}\nSHIFT {minus_decremented_i}\nSHIFT {decremented_i}\n' + \
-            f'STORE {number_shifted_i_minus_one_reg}\n' + \
-            f'LOAD {number_reg}\nSHIFT {negated_i}\nSHIFT {i_reg}\nSTORE {number_shifted_i_reg}\n' + \
-            f'LOAD {number_shifted_i_minus_one_reg}\nSUB {number_shifted_i_reg}\nSHIFT {minus_decremented_i}\n'
+        result: List[str] = [
+            f'LOAD {i_reg}',
+            negate_number(),
+            f'STORE {negated_i}',
+            f'INC',
+            f'STORE {minus_decremented_i}',
+            negate_number(),
+            f'STORE {decremented_i}',
+            f'LOAD {number_reg}',
+            f'SHIFT {minus_decremented_i}',
+            f'SHIFT {decremented_i}',
+            f'STORE {number_shifted_i_minus_one_reg}',
+            f'LOAD {number_reg}',
+            f'SHIFT {negated_i}',
+            f'SHIFT {i_reg}',
+            f'STORE {number_shifted_i_reg}',
+            f'LOAD {number_shifted_i_minus_one_reg}',
+            f'SUB {number_shifted_i_reg}',
+            f'SHIFT {minus_decremented_i}',
+        ]
 
-        return result
+        return '\n'.join(result) + '\n'
 
     # Registers used: 0, given1 and given2
     def generate_code_for_log(self, number_reg: int, help_reg_1: int, help_reg_2: int) -> str:
@@ -206,11 +261,25 @@ class MathOperationsCodeGenerator:
         minus_one = self.visitor.declared_variables[self.visitor.MINUS_ONE_VAR_NAME]
         label_start = self.visitor.label_provider.get_label()
         label_end = self.visitor.label_provider.get_label()
-        res: str = f'LOAD {number_reg}\nSTORE {num}\nSUB 0\nSTORE {value}\n' + \
-            f'{label_start}\nLOAD {num}\nSHIFT {minus_one}\nSTORE{num}\nJZERO {label_end}\n' + \
-            f'LOAD {value}\nINC\nSTORE {value}\nJUMP {label_start}\n{label_end}\nLOAD {value}\n'
+        res: List[str] = [
+            f'LOAD {number_reg}',
+            f'STORE {num}',
+            f'SUB 0',
+            f'STORE {value}',
+            f'{label_start}',
+            f'LOAD {num}',
+            f'SHIFT {minus_one}',
+            f'STORE {num}',
+            f'JZERO {label_end}',
+            f'LOAD {value}',
+            f'INC',
+            f'STORE {value}',
+            f'JUMP {label_start}',
+            f'{label_end}',
+            f'LOAD {value}',
+        ]
 
-        return res
+        return '\n'.join(res) + '\n'
 
     expressions: Dict[str, Callable] = {
         'PLUS': _generate_code_for_addition,
