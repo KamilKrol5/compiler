@@ -25,8 +25,8 @@ def init() -> str:
     expr2 = ExpressionHavingOneValue(IntNumberValue(20))
     expr3 = ExpressionHavingOneValue(IntNumberValue(-15))
     expr4 = ExpressionHavingOneValue(IntNumberValue(-14))
-    code: str = generate_code_for_expression(expr1, interpreter) + f'STORE {decl_arrays["arr"][0] + 5 }\n'  #arr[-15]=10
-    code = code + generate_code_for_expression(expr2, interpreter) + f'STORE {decl_arrays["arr"][0] + 6 }\n'  #arr[-14]=20
+    code: str = generate_code_for_expression(expr1, interpreter) + f'STORE {decl_arrays["arr"][0] + 5 }\n'  # arr[-15]=10
+    code = code + generate_code_for_expression(expr2, interpreter) + f'STORE {decl_arrays["arr"][0] + 6 }\n'  # arr[-14]=20
     code = code + generate_code_for_expression(expr3, interpreter) + f'STORE {decl_vars["e"]}\n'  # e = -15
     code = code + generate_code_for_expression(expr4, interpreter) + f'STORE {decl_vars["f"]}\n'  # f = -14
     code = code + generate_code_for_expression(expr1, interpreter) + f'STORE {decl_vars["g"]}\n'  # g = 10
@@ -237,28 +237,27 @@ def test_taking_ith_bit():
 def test_log():
     cg = MathOperationsCodeGenerator(interpreter)
     code: str = generate_number(1, 255)
-    code = code + generate_number(11, 50)
-    code = code + generate_number(32, 52)
-    code = code + generate_number(1024, 53)
-    code = code + generate_number(24, 51)
-    code = code + generate_number(63, 54)
-    code = code + generate_number(65, 57)
+    code = code + generate_number(11, 500)
+    code = code + generate_number(32, 520)
+    code = code + generate_number(1024, 530)
+    code = code + generate_number(24, 510)
+    code = code + generate_number(63, 540)
+    code = code + generate_number(65, 570)
     code = code + cg.generate_code_for_log(255, 15, 16) + f'PUT\n'
-    code = code + cg.generate_code_for_log(50, 15, 16) + f'PUT\n'
-    code = code + cg.generate_code_for_log(52, 15, 16) + f'PUT\n'
-    code = code + cg.generate_code_for_log(53, 15, 16) + f'PUT\n'
-    code = code + cg.generate_code_for_log(51, 15, 16) + f'PUT\n'
-    code = code + cg.generate_code_for_log(54, 15, 16) + f'PUT\n'
-    code = code + cg.generate_code_for_log(57, 15, 16) + f'PUT\n'
+    code = code + cg.generate_code_for_log(500, 15, 16) + f'PUT\n'
+    code = code + cg.generate_code_for_log(520, 15, 16) + f'PUT\n'
+    code = code + cg.generate_code_for_log(530, 15, 16) + f'PUT\n'
+    code = code + cg.generate_code_for_log(510, 15, 16) + f'PUT\n'
+    code = code + cg.generate_code_for_log(540, 15, 16) + f'PUT\n'
+    code = code + cg.generate_code_for_log(570, 15, 16) + f'PUT\n'
     return code
 
 
 @expected(156, 0, 32)
 def test_abs():
-    cg = MathOperationsCodeGenerator(interpreter)
-    code: str = generate_number(-156, 51) + generate_abs(interpreter.label_provider) + 'PUT\n'
-    code = code + generate_number(0, 50) + generate_abs(interpreter.label_provider) + 'PUT\n'
-    code = code + generate_number(32, 52) + generate_abs(interpreter.label_provider) + 'PUT\n'
+    code: str = generate_number(-156, 510) + generate_abs(interpreter.label_provider) + 'PUT\n'
+    code = code + generate_number(0, 500) + generate_abs(interpreter.label_provider) + 'PUT\n'
+    code = code + generate_number(32, 520) + generate_abs(interpreter.label_provider) + 'PUT\n'
     return code
 
 
@@ -586,15 +585,15 @@ def test_modulo() -> str:
 if __name__ == '__main__':
     tests = [
         init,
-        # test_single_val_expr, test_add, test_sub, test_mul, test_taking_ith_bit, test_abs,
-        # test_divide_big_numbers,
+        test_single_val_expr, test_add, test_sub, test_mul, test_taking_ith_bit, test_abs,
+        test_divide_big_numbers,
         test_divide,
-        # test_log,
-        # test_modulo_big_numbers,
+        test_log,
+        test_modulo_big_numbers,
         test_modulo
     ]
 
-    interpreter.generated_code.append(generate_number(555, 32) + generate_number(2, 64) + \
+    interpreter.generated_code.append(generate_number(555, 32) + generate_number(2, 64) +
                                       generate_number(-2000, 125) + generate_number(-666, 142))
 
     expected = flatten(t.expected for t in tests)
