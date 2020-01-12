@@ -177,9 +177,6 @@ class ASTInterpreter(Visitor):
     def is_identifier_local_variable(self, identifier: Identifier) -> bool:
         return isinstance(identifier, VariableIdentifier) and identifier.identifier_name in self.local_variables
 
-    def visit_int_number_value(self, int_number_value: 'IntNumberValue') -> int:
-        pass
-
     def visit_identifier_value(self, identifier_value: 'IdentifierValue') -> int:
         pass
 
@@ -212,15 +209,6 @@ class ASTInterpreter(Visitor):
             self.declared_variables[variable_identifier.identifier_name]
         )
 
-    def visit_number_declaration(self, number_declaration: 'NumberDeclaration') -> None:
-        pass
-
-    def visit_array_declaration(self, array_declaration: 'ArrayDeclaration') -> None:
-        pass
-
-    def visit_declarations(self, declarations: 'Declarations') -> None:
-        pass
-
     def visit_expression_having_one_value(self, expression: 'ExpressionHavingOneValue'):
         self.generated_code.append(
             generate_code_for_expression(expression, self))
@@ -233,10 +221,6 @@ class ASTInterpreter(Visitor):
         # TODO change it
         self.generated_code.append(
             generate_condition(condition, self))
-
-    def visit_commands(self, commands: 'Commands') -> None:
-        for c in commands.commands:
-            c.accept(self)
 
     def visit_assignment_command(self, assignment_command: 'AssignmentCommand') -> None:
         write_code_for_assignment_command(assignment_command, self)
