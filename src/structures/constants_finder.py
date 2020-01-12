@@ -3,7 +3,7 @@ from typing import Dict
 from structures.ast.AST import *
 
 
-class LookUpVisitor(Visitor, ABC):
+class ConstantsFinder(Visitor, ABC):
 
     def __init__(self, program: 'Program', search_in_expressions=True):
         self.program = program
