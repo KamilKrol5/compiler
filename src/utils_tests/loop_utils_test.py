@@ -1,3 +1,4 @@
+# TODO refactor it
 from structures.ast.AST import ArrayDeclaration, TwoValueCondition, IntNumberValue, ArrayElementByIntNumberIdentifier, \
     ArrayElementByVariableIdentifier, VariableIdentifier, IdentifierValue
 from utils.loop_utils import generate_condition

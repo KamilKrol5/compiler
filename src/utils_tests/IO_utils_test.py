@@ -1,4 +1,4 @@
-from structures.ast.AST import IntNumberValue, IdentifierValue
+# TODO refactor it
 from utils.IO_utils import *
 from utils.math_utils import generate_number
 from utils.utils import write_to_file
