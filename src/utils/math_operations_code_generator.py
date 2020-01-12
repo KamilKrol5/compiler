@@ -90,7 +90,10 @@ class MathOperationsCodeGenerator:
     def _generate_code_for_division_or_modulo(self, expression: ExpressionHavingTwoValues, is_modulo: bool) -> str:
         if isinstance(expression.valueLeft, IntNumberValue) and isinstance(expression.valueRight, IntNumberValue):
             if expression.valueRight.value != 0:
-                return generate_number(expression.valueLeft.value // expression.valueRight.value, 0)
+                if is_modulo:
+                    return generate_number(expression.valueLeft.value % expression.valueRight.value, 0)
+                else:
+                    return generate_number(expression.valueLeft.value // expression.valueRight.value, 0)
             else:
                 return generate_number(0)
 
@@ -103,7 +106,6 @@ class MathOperationsCodeGenerator:
         counter = 19
         number_copy = 20
         register_to_return = reminder if is_modulo else quotient
-
         minus_one = self.visitor.declared_variables[self.MINUS_ONE_VAR_NAME]
         one = self.visitor.declared_variables[self.ONE_VAR_NAME]
 
@@ -116,8 +118,11 @@ class MathOperationsCodeGenerator:
         label_number_neg = self.visitor.label_provider.get_label()
         label_both_neg = self.visitor.label_provider.get_label()
         label_finish = self.visitor.label_provider.get_label()
+        label_finish1 = self.visitor.label_provider.get_label()
+        label_finish2 = self.visitor.label_provider.get_label()
+        label_finish3 = self.visitor.label_provider.get_label()
 
-        code_1: str = f''
+        code_1: str = f'## BEGIN div\n'
 
         code_2: str = generate_code_for_loading_value(expression.valueRight, self.visitor) + \
             f'STORE {divisor}\nJZERO {label_zero}\nSUB 0\nSTORE {reminder}\nSTORE {quotient}\n' + \
@@ -138,19 +143,44 @@ class MathOperationsCodeGenerator:
             f'LOAD {counter}\nDEC\nSTORE {counter}\nJUMP {label_start}\n'
 
         code_5 = f'{label_zero}\nSUB 0\nJUMP {label_end2}\n{label_end}\nLOAD {quotient}\n' + \
-                 f'SHIFT {minus_one}\nSTORE {quotient}\n{label_end2}\n'
+                 f'SHIFT {minus_one}\nSTORE {quotient}\n'
         #  return
-        code_6 = f'LOAD {divisor}\nJNEG {label_divisor_neg}\n'  # here divisor is positive so reminder will be positive
-        code_6 = code_6 + f'LOAD {number}\nJNEG {label_number_neg}\nJUMP {label_finish}\n' + \
-            f'{label_divisor_neg}\nLOAD {number}\nJNEG {label_both_neg}\n' + \
-            f'LOAD {quotient}\nINC\n' + negate_number() + f'STORE {quotient}\nLOAD {reminder}' + \
-            f'SUB {divisor_abs}\nSTORE {reminder}\nJUMP {label_finish}\n' + \
-            f'{label_number_neg}'  # here divisor is positive and number is negative
-        code_6 = code_6 + f'LOAD {quotient}\nINC\n' + negate_number() + f'STORE {quotient}\n' + \
-            f'LOAD {divisor_abs}\nSUB {reminder}\nSTORE {reminder}\nJUMP {label_finish}\n{label_both_neg}\n' + \
-            f'LOAD {reminder}\n' + negate_number() + f'JUMP {label_finish}' + \
-            f'{label_finish}\nLOAD {register_to_return}\n'
-        return code_1 + code_2 + code_3 + code_4 + code_5 + code_6
+        code_6 = [f'LOAD {divisor}',
+                  f'JNEG {label_divisor_neg}',  # here divisor is positive so reminder will be positive
+                  f'LOAD {number}',
+                  f'JNEG {label_number_neg}',
+                  f'JUMP {label_finish}',
+                  f'{label_divisor_neg}',
+                  f'LOAD {number}',
+                  f'JNEG {label_both_neg}',
+                  f'LOAD {quotient}',
+                  f'INC',
+                  negate_number(),
+                  f'STORE {quotient}',
+                  f'LOAD {reminder}',
+                  f'SUB {divisor_abs}',
+                  f'STORE {reminder}',
+                  f'JUMP {label_finish1}',
+                  f'{label_number_neg}',  # here divisor is positive and number is negative
+                  f'LOAD {quotient}',
+                  f'INC',
+                  negate_number(),
+                  f'STORE {quotient}',
+                  f'LOAD {divisor_abs}',
+                  f'SUB {reminder}',
+                  f'STORE {reminder}',
+                  f'JUMP {label_finish2}',
+                  f'{label_both_neg}',
+                  f'LOAD {reminder}',
+                  negate_number(),
+                  f'STORE {reminder}',
+                  f'{label_finish}',
+                  f'{label_finish1}',
+                  f'{label_finish2}',
+                  f'LOAD {register_to_return}',
+                  f'{label_end2}',
+                  ]
+        return code_1 + code_2 + code_3 + code_4 + code_5 + '\n'.join(code_6) + '\n## END div\n'
 
     # Registers used: 0-1, 10-14
     @staticmethod
