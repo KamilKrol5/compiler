@@ -1,6 +1,7 @@
 from structures.ast.AST import *
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Iterable
 
+from structures.constants_finder import ConstantsFinder
 from utils.IO_utils import generate_code_for_write_command, generate_code_for_read_command
 from utils.command_utils import write_code_for_if_then_command, write_code_for_if_then_else_command, \
     write_code_for_assignment_command, write_code_for_while_do_command, write_code_for_do_while_command, \
@@ -11,7 +12,7 @@ from utils.loop_utils import generate_condition
 from utils.arrays_utils import generate_code_for_computing_index_of_array_element_by_variable, \
     compute_real_register_of_array_element
 from structures.ast.identifier_register_representation import *
-from utils.math_utils import generate_number
+from utils.math_utils import generate_number, generate_numbers, generate_numbers_naive
 from utils.value_utils import generate_code_for_loading_value
 
 
@@ -35,6 +36,7 @@ class ASTInterpreter(Visitor):
     ONE_VAR_NAME = '@one'
     MINUS_ONE_VAR_NAME = '@minus_one'
     ZERO_VAR_NAME = '@zero'
+    CONSTANT_SUFFIX = '@const'
     default_constants = [
         DefaultConstant(ONE_VAR_NAME, 1),
         DefaultConstant(MINUS_ONE_VAR_NAME, -1),
@@ -44,9 +46,13 @@ class ASTInterpreter(Visitor):
 
     def __init__(self, program: Program):
         self.program: Program = program
+        # constants preparation
+        self.constants_finder = ConstantsFinder(self.program, search_in_expressions=False)
+        constants = self.constants_finder.find_constants().keys()
         self.program.declarations.declarations.extend([NumberDeclaration(self.ONE_VAR_NAME),
                                                        NumberDeclaration(self.MINUS_ONE_VAR_NAME),
                                                        NumberDeclaration(self.ZERO_VAR_NAME)])
+        self.program.declarations.declarations.extend(NumberDeclaration(str(c)+self.CONSTANT_SUFFIX) for c in constants)
 
         # structures for variables
         self.declared_variables: Dict[str, int] = dict()
@@ -60,7 +66,15 @@ class ASTInterpreter(Visitor):
         self.loop_name_provider: LabelProvider = LabelProvider('#loop')
 
         self._assign_registers_to_variables()
+
+        # generating constants
         self.generate_default_constants()
+        self.generate_constants(constants)
+        self.constants: Dict[str, int] = dict(
+            (str(const)+self.CONSTANT_SUFFIX,
+             self.declared_variables[str(const)+self.CONSTANT_SUFFIX])
+            for const in self.constants_finder.constants_found.keys())
+        # print(self.constants, self.constants_finder.constants_found.keys())
 
     def _assign_registers_to_variables(self):
         # assign registers to variables
@@ -88,6 +102,11 @@ class ASTInterpreter(Visitor):
         for const in self.default_constants:
             self.generated_code.append(
                 generate_number(const.value, destination_register=self.declared_variables[const.name]))
+
+    def generate_constants(self, constants: Iterable[int]):
+        numbers: Dict[int, int] = \
+            dict((const, self.declared_variables[str(const)+self.CONSTANT_SUFFIX]) for const in constants)
+        self.generated_code.append(generate_numbers(numbers))
 
     ''' Returns local variable key in the declared_variables map.
         Example: call with argument 'i' will return 'i@local'.'''

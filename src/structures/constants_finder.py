@@ -14,7 +14,7 @@ class ConstantsFinder(Visitor):
         return self.constants_found
 
     def _add_constant(self, number: int):
-        if number in self.constants_found.values():
+        if number in self.constants_found:
             self.constants_found[number] += 1
         else:
             self.constants_found[number] = 1
@@ -23,8 +23,8 @@ class ConstantsFinder(Visitor):
         self._add_constant(int_number_value.value)
 
     def visit_expression_having_one_value(self, expression: 'ExpressionHavingOneValue'):
-        if self.search_in_expressions:
-            expression.value.accept(self)
+        # if self.search_in_expressions:
+        expression.value.accept(self)
 
     def visit_expression_having_two_values(self, expression: 'ExpressionHavingTwoValues'):
         if self.search_in_expressions:
