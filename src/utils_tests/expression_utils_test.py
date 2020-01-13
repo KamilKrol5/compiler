@@ -4,7 +4,7 @@ from utils.AST_interpreter import ASTInterpreter
 from utils.IO_utils import generate_code_for_write_command
 from utils.expression_utils import generate_code_for_expression
 from utils.math_operations_code_generator import MathOperationsCodeGenerator
-from utils.math_utils import generate_number, generate_abs
+from utils.math_utils import generate_number, generate_abs, generate_numbers
 from utils.test_utils import expected, get_numbers_from_run_code, flatten
 
 decl_vars = {"c": 32, "d": 64, "e": 123, "f": 120, "g": 121, 'm_seven': 54, 'seven': 53, 'tw_four': 51, 'm_tw_four': 50,
@@ -19,7 +19,7 @@ interpreter.declared_variables.update(decl_vars)
 interpreter.declared_arrays.update(decl_arrays)
 
 
-@expected(10, 20, -15, -14, 10, 20)
+@expected(24, -24, -7, 7, 1, -1, 0, 10, 20, -15, -14, 10, 20)
 def init() -> str:
     expr1 = ExpressionHavingOneValue(IntNumberValue(10))
     expr2 = ExpressionHavingOneValue(IntNumberValue(20))
@@ -30,13 +30,28 @@ def init() -> str:
     code = code + generate_code_for_expression(expr3, interpreter) + f'STORE {decl_vars["e"]}\n'  # e = -15
     code = code + generate_code_for_expression(expr4, interpreter) + f'STORE {decl_vars["f"]}\n'  # f = -14
     code = code + generate_code_for_expression(expr1, interpreter) + f'STORE {decl_vars["g"]}\n'  # g = 10
-    code = code + generate_number(24, decl_vars['tw_four'])
-    code = code + generate_number(-24, decl_vars['m_tw_four'])
-    code = code + generate_number(-7, decl_vars['m_seven'])
-    code = code + generate_number(7, decl_vars['seven'])
-    code = code + generate_number(1, decl_vars['one'])
-    code = code + generate_number(-1, decl_vars['m_one'])
-    code = code + generate_number(0, decl_vars['zero'])
+    code = code + generate_numbers({
+        24: decl_vars['tw_four'],
+        -24: decl_vars['m_tw_four'],
+        -7: decl_vars['m_seven'],
+        7: decl_vars['seven'],
+        1: decl_vars['one'],
+        -1: decl_vars['m_one'],
+        0: decl_vars['zero']}, generate_zero=True)
+    code = code + generate_code_for_write_command(
+        WriteCommand(IdentifierValue(VariableIdentifier('tw_four'))), interpreter)
+    code = code + generate_code_for_write_command(
+        WriteCommand(IdentifierValue(VariableIdentifier('m_tw_four'))), interpreter)
+    code = code + generate_code_for_write_command(
+        WriteCommand(IdentifierValue(VariableIdentifier('m_seven'))), interpreter)
+    code = code + generate_code_for_write_command(
+        WriteCommand(IdentifierValue(VariableIdentifier('seven'))), interpreter)
+    code = code + generate_code_for_write_command(
+        WriteCommand(IdentifierValue(VariableIdentifier('one'))), interpreter)
+    code = code + generate_code_for_write_command(
+        WriteCommand(IdentifierValue(VariableIdentifier('m_one'))), interpreter)
+    code = code + generate_code_for_write_command(
+        WriteCommand(IdentifierValue(VariableIdentifier('zero'))), interpreter)
     code = code + generate_code_for_write_command(
         WriteCommand(IdentifierValue(ArrayElementByIntNumberIdentifier('arr', IntNumberValue(-15)))), interpreter)
     code = code + generate_code_for_write_command(
