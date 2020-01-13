@@ -131,7 +131,7 @@ def write_code_for_assignment_command(
     if visitor.is_identifier_local_variable(command.identifier):
         raise AnAttemptToModifyCounterException(
             f"An attempt to modify iterator '{command.identifier}'' inside a for loop. Iterator cannot be modified.",
-            command.start_position)
+            occurrence_place=command.start_position)
     register: AbstractIdentifierAccess = command.identifier.accept(visitor)
     visitor.generated_code.append(register.prepare_register())
     command.expression.accept(visitor)

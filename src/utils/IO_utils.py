@@ -14,11 +14,11 @@ def generate_code_for_read_command(
 ) -> str:
     if isinstance(read_command.identifier, VariableIdentifier):
         if read_command.identifier.identifier_name not in visitor.declared_variables:
-            raise UndeclaredVariableException(f"Undeclared variable {read_command.identifier.identifier_name}.",
+            raise UndeclaredVariableException(f"Undeclared variable '{read_command.identifier.identifier_name}'.",
                                               occurrence_place=read_command.identifier.start_position)
         if read_command.identifier.identifier_name in visitor.local_variables:
             raise AnAttemptToModifyCounterException(
-                f'An attempt to modify iterator: {read_command.identifier.identifier_name}.',
+                f"An attempt to modify iterator: '{read_command.identifier.identifier_name}'.",
                 occurrence_place=read_command.start_position)
         result: str = 'GET\n'
         result = result + f'STORE {visitor.declared_variables[read_command.identifier.identifier_name]}\n'
@@ -26,11 +26,21 @@ def generate_code_for_read_command(
         arr_name = read_command.identifier.array_identifier
         if arr_name not in visitor.declared_arrays:
             raise UndeclaredArrayException(
-                f"An array '{arr_name}' is not declared!.", read_command.identifier.start_position)
+                f"An array '{arr_name}' is not declared.", occurrence_place=read_command.identifier.start_position)
         result: str = 'GET\n'
         real_element_index = compute_real_register_of_array_element(visitor.declared_arrays, read_command.identifier)
         result = result + f'STORE {real_element_index}\n'
     elif isinstance(read_command.identifier, ArrayElementByVariableIdentifier):
+        arr_name = read_command.identifier.array_identifier
+        var = read_command.identifier.index_identifier
+        if arr_name not in visitor.declared_arrays:
+            raise UndeclaredArrayException(
+                f"An array '{arr_name}' is not declared.", occurrence_place=read_command.identifier.start_position)
+        if var not in visitor.declared_variables:
+            raise UndeclaredVariableException(
+                f"An index variable for accessing element of array '{arr_name}'('{var}') is not declared."
+                f" '{var}' is not declared",
+                occurrence_place=read_command.identifier.start_position)
         index_computation: str = generate_code_for_computing_index_of_array_element_by_variable(
             read_command.identifier, visitor)
         result: str = index_computation + f'STORE 1\nGET\nSTOREI 1\n'
