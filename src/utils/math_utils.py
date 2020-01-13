@@ -25,10 +25,14 @@ def generate_abs(label_provider: LabelProvider) -> str:
 # Generates constant value and stores it in destination_register
 # registers used: 0-1
 @registers_used(*negate_number.registers_used)
-def generate_number(x: int, constants: Dict[str, int] = None, destination_register=0) -> str:
+def generate_number(x: int, constants: Dict[int, int] = None, destination_register=0) -> str:
     if constants is None:
         constants = dict()
-    constants.items()
+    if x in constants.keys():
+        # print(f'loading {x} from {constants[x]}\n')
+        if destination_register != 0:
+            return f'LOAD {constants[x]}\nSTORE {destination_register}\n'
+        return f'LOAD {constants[x]}\n'
     one_register: int = 1
     result: str = clean_p0() + f'INC\nSTORE {one_register}\nDEC\n'
 
@@ -59,7 +63,7 @@ def generate_number(x: int, constants: Dict[str, int] = None, destination_regist
 
 
 @registers_used(2, *negate_number.registers_used)
-def generate_numbers(numbers: Dict[int, int], generate_zero=False) -> str:
+def generate_numbers(numbers: Dict[int, int]) -> str:
     one_register: int = 2
     result: str = clean_p0() + f'INC\nSTORE {one_register}\nDEC\n'
     #  abs(n): (has_pos, has_neg)
@@ -68,12 +72,6 @@ def generate_numbers(numbers: Dict[int, int], generate_zero=False) -> str:
     if len(numbers) == 0:
         return ''
 
-    # if generate_zero:
-    #     if 0 in numbers.keys():
-    #         result = result + f'STORE {numbers[0]}\n'
-    #
-    # # is_number_positive = dict()
-    # numbers.pop(0)
     numbers_abs = (abs(i) for i in numbers.keys())
 
     for n in numbers.keys():
@@ -115,7 +113,7 @@ def generate_numbers(numbers: Dict[int, int], generate_zero=False) -> str:
     return result
 
 
-def generate_numbers_naive(numbers: Dict[int, int], generate_zero=False) -> str:
+def generate_numbers_naive(numbers: Dict[int, int]) -> str:
     result = ''
     for n, reg in numbers.items():
         result = result + generate_number(n, destination_register=reg)

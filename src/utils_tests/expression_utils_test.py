@@ -37,7 +37,7 @@ def init() -> str:
         7: decl_vars['seven'],
         1: decl_vars['one'],
         -1: decl_vars['m_one'],
-        0: decl_vars['zero']}, generate_zero=True)
+        0: decl_vars['zero']})
     code = code + generate_code_for_write_command(
         WriteCommand(IdentifierValue(VariableIdentifier('tw_four'))), interpreter)
     code = code + generate_code_for_write_command(

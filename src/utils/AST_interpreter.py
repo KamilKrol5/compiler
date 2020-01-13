@@ -70,11 +70,13 @@ class ASTInterpreter(Visitor):
         # generating constants
         self.generate_default_constants()
         self.generate_constants(constants)
-        self.constants: Dict[str, int] = dict(
-            (str(const)+self.CONSTANT_SUFFIX,
+        self.constants: Dict[int, int] = dict(
+            (const,
              self.declared_variables[str(const)+self.CONSTANT_SUFFIX])
             for const in self.constants_finder.constants_found.keys())
-        # print(self.constants, self.constants_finder.constants_found.keys())
+        # pprint(self.constants)
+        # pprint(self.declared_variables)
+        # pprint(self.declared_arrays)
 
     def _assign_registers_to_variables(self):
         # assign registers to variables
