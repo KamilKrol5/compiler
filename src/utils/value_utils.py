@@ -89,24 +89,33 @@ def load_value_by_identifier(identifier: Identifier, visitor: 'ASTInterpreter', 
         elif identifier.identifier_name in visitor.local_variables.keys():
             register_to_load = visitor.local_variables[identifier.identifier_name]
         else:
-            raise ValueError(f'Neither declared_variables nor local_variables dictionary'
-                             ' does not contain key - identifier name provided with '
-                             f'"identifier" argument. Variable {identifier.identifier_name} might not be declared.')
+            raise UndeclaredVariableException(
+                f"Neither declared_variables nor local_variables dictionary"
+                " does not contain key - identifier name provided with "
+                f"'identifier' argument. Variable '{identifier.identifier_name}' might not be declared.",
+                occurrence_place=identifier.start_position)
+
         result = result + f'LOAD {register_to_load}\n'
     elif isinstance(identifier, ArrayElementByIntNumberIdentifier):
         if identifier.array_identifier not in visitor.declared_arrays.keys():
-            raise ValueError('declared_arrays dictionary does not contain key - identifier name provided with '
-                             '"identifier" argument. Variable might not be declared.')
+            raise UndeclaredArrayException(
+                f"Declared_arrays dictionary does not contain key - identifier name provided with "
+                f"'identifier' argument. Array variable '{identifier.array_identifier}' might not be declared.",
+                occurrence_place=identifier.start_position)
         result = result + f'LOAD {compute_real_register_of_array_element(visitor.declared_arrays, identifier)}\n'
     elif isinstance(identifier, ArrayElementByVariableIdentifier):
         if identifier.array_identifier not in visitor.declared_arrays.keys():
-            raise ValueError('declared_arrays dictionary does not contain key - identifier name provided with '
-                             '"identifier" argument. Variable might not be declared.')
+            raise UndeclaredArrayException(
+                f"Declared_arrays dictionary does not contain key - identifier name provided with "
+                f"'identifier' argument. Array variable '{identifier.array_identifier}' might not be declared.",
+                occurrence_place=identifier.start_position)
         if identifier.index_identifier not in visitor.declared_variables.keys() and\
                 identifier.index_identifier not in visitor.local_variables.keys():
-            raise ValueError(f'Neither declared_variables nor local_variables dictionary'
-                             ' does not contain key - identifier name provided with '
-                             f'"identifier" argument. Variable {identifier.index_identifier} might not be declared.')
+            raise UndeclaredVariableException(
+                f'Neither declared_variables nor local_variables dictionary'
+                ' does not contain key - identifier name provided with '
+                f"'identifier'' argument. Variable '{identifier.index_identifier}' might not be declared.",
+                occurrence_place=identifier.start_position)
 
         result = result + generate_code_for_loading_array_element_by_variable(identifier, visitor)
 

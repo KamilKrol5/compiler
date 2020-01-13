@@ -10,6 +10,6 @@
 10. ```PYTHONPATH=$(pwd) python3.7 ../parser.py 7-loopiii.imp --run 1 0 2```: 31001 40900 2222012;  
 11. ```PYTHONPATH=$(pwd) python3.7 ../parser.py 8-for.imp --run 12 23 34```: 507 4379 0;  
 12. ```PYTHONPATH=$(pwd) python3.7 ../parser.py 9-sort.imp --run```: ?;  
-13. ```PYTHONPATH=$(pwd) python3.7 ../parser.py program0.imp --run 100```: ?;  
+13. ```PYTHONPATH=$(pwd) python3.7 ../parser.py program0.imp --run 100```: 0 0 1 0 0 1 1;  
 14. ```PYTHONPATH=$(pwd) python3.7 ../parser.py program1.imp --run 100```: ?;  
 15. ```PYTHONPATH=$(pwd) python3.7 ../parser.py constants0.imp --run```: 600000;  

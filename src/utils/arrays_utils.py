@@ -62,10 +62,14 @@ def generate_code_for_computing_index_of_array_element_by_variable(
         identifier: ArrayElementByVariableIdentifier,
         visitor: 'ASTInterpreter'
 ) -> str:
-    if identifier.index_identifier in visitor.local_variables:
-        arr_start = visitor.local_variables[identifier.index_identifier]
+    if identifier.index_identifier not in visitor.declared_variables:
+        raise UndeclaredVariableException(f"Variable '{identifier.index_identifier}' was not declared.",
+                                          occurrence_place=identifier.start_position)
     else:
         arr_start = visitor.declared_variables[identifier.index_identifier]
+    if identifier.array_identifier not in visitor.declared_arrays:
+        raise UndeclaredArrayException(f"Array '{identifier.array_identifier}' was not declared.",
+                                       occurrence_place=identifier.start_position)
     return generate_number(
         visitor.declared_arrays[identifier.array_identifier][0], visitor.constants, destination_register=5) + \
         generate_number(
