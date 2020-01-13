@@ -42,6 +42,10 @@ class AnAttemptToModifyCounterException(CompilationException):
     pass
 
 
+class MultipleDeclarationException(CompilationException):
+    pass
+
+
 class DefaultConstant:
     def __init__(self, name: str, value: int):
         self.name: str = name
@@ -101,8 +105,16 @@ class ASTInterpreter(Visitor):
         # TODO this can be optimized by shifting array indexes at the end
         for declaration in self.program.declarations.declarations:
             if isinstance(declaration, NumberDeclaration):
+                if declaration.identifier in self.declared_variables:
+                    raise MultipleDeclarationException(
+                        f"Variable {declaration.identifier} is already defined.",
+                        occurrence_place=declaration.start_position)
                 self.declared_variables[declaration.identifier] = self.VARIABLES_START_REGISTER + 1
             elif isinstance(declaration, ArrayDeclaration):
+                if declaration.identifier in self.declared_arrays:
+                    raise MultipleDeclarationException(
+                        f"Array {declaration.identifier} is already defined.",
+                        occurrence_place=declaration.start_position)
                 array_length = declaration.end_index.value - declaration.begin_index.value
                 real_start = self.VARIABLES_START_REGISTER + 1
                 real_end = self.VARIABLES_START_REGISTER + 1 + array_length
