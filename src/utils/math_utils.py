@@ -25,7 +25,10 @@ def generate_abs(label_provider: LabelProvider) -> str:
 # Generates constant value and stores it in destination_register
 # registers used: 0-1
 @registers_used(*negate_number.registers_used)
-def generate_number(x: int, destination_register=0) -> str:
+def generate_number(x: int, constants: Dict[str, int] = None, destination_register=0) -> str:
+    if constants is None:
+        constants = dict()
+    constants.items()
     one_register: int = 1
     result: str = clean_p0() + f'INC\nSTORE {one_register}\nDEC\n'
 
@@ -115,7 +118,7 @@ def generate_numbers(numbers: Dict[int, int], generate_zero=False) -> str:
 def generate_numbers_naive(numbers: Dict[int, int], generate_zero=False) -> str:
     result = ''
     for n, reg in numbers.items():
-        result = result + generate_number(n, reg)
+        result = result + generate_number(n, destination_register=reg)
     return result
 
 
@@ -125,13 +128,13 @@ def add_constants(x: int, y: int) -> str:
     # Numbers do not have the same sign
     if x >= 0 and y <= 0:
         x1, y1 = abs(x), abs(y)
-        return generate_number(y1, 2) + generate_number(x1) + 'SUB 2'
+        return generate_number(y1, destination_register=2) + generate_number(x1) + 'SUB 2'
     elif x <= 0 and y >= 0:
         x1, y1 = abs(x), abs(y)
-        return generate_number(x1, 2) + generate_number(y1) + 'SUB 2'
+        return generate_number(x1, destination_register=2) + generate_number(y1) + 'SUB 2'
 
     # Numbers have the same sign
-    result: str = generate_number(x, 2) + generate_number(y) + 'ADD 2'
+    result: str = generate_number(x, destination_register=2) + generate_number(y) + 'ADD 2'
     # if x < 0 and y < 0:
     #     result = result + negate_number()
     return result
@@ -152,7 +155,8 @@ def multiply_constants(x: int, y: int) -> str:
     if x < y:
         y, x = x, y
         x_register, y_register = y_register, x_register
-    result: str = generate_number(abs(y), y_register) + generate_number(abs(x), x_register)
+    result: str = generate_number(abs(y), destination_register=y_register) + \
+        generate_number(abs(x), destination_register=x_register)
 
     # compute the largest power of 2 smaller than y
     shifts = floor(log(y, 2))
@@ -162,8 +166,8 @@ def multiply_constants(x: int, y: int) -> str:
     # rest from division y / 2^shifts
     rest = y % 2 ** shifts
     print(rest)
-    generate_number(abs(rest), y_register)
-    result = result + generate_number(int(abs(shifts)), shifts_reg)
+    generate_number(abs(rest), destination_register=y_register)
+    result = result + generate_number(int(abs(shifts)), destination_register=shifts_reg)
     result = result + f'LOAD {x_register}\n' + f'SHIFT {shifts_reg}\n'
     # add the rest
     for i in range(0, rest):
@@ -198,7 +202,8 @@ def _perform_division_with_reminder(n: int, d: int, label1: str, label2: str, de
     n = abs(n)
     d = abs(d)
 
-    result: str = generate_number(n, n_register) + generate_number(d, d_register)
+    result: str = generate_number(n, destination_register=n_register) + \
+        generate_number(d, destination_register=d_register)
     result = result + f'''SUB 0
         STORE {result_register} # res = 0
         LOAD {d_register}

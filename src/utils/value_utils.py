@@ -12,7 +12,7 @@ def generate_code_for_loading_value(
         visitor: 'ASTInterpreter'
 ) -> str:
     if isinstance(value, IntNumberValue):
-        return generate_number(value.value)
+        return generate_number(value.value, constants=visitor.constants)
     elif isinstance(value, IdentifierValue):
         if isinstance(value.identifier, VariableIdentifier):
             if value.identifier.identifier_name in visitor.declared_variables.keys():

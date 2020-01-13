@@ -101,7 +101,7 @@ class ASTInterpreter(Visitor):
     def generate_default_constants(self):
         for const in self.default_constants:
             self.generated_code.append(
-                generate_number(const.value, destination_register=self.declared_variables[const.name]))
+                generate_number(const.value, {}, destination_register=self.declared_variables[const.name]))
 
     def generate_constants(self, constants: Iterable[int]):
         numbers: Dict[int, int] = \
@@ -167,7 +167,7 @@ class ASTInterpreter(Visitor):
         if default_value is not None:
             # assume tht default_value is type int
             self.generated_code.append(generate_number(
-                default_value, self.local_variables[variable_name]))
+                default_value, constants=self.constants, destination_register=self.local_variables[variable_name]))
 
     ''' Removes previously added local variable from self.local_variables and self.declared_variables.
         local_identifier_name is variable name present in local_variables (in basic case without @local suffix).

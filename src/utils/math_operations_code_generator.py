@@ -46,7 +46,7 @@ class MathOperationsCodeGenerator:
 
     def _generate_code_for_multiplication(self, expression: ExpressionHavingTwoValues) -> str:
         if isinstance(expression.valueLeft, IntNumberValue) and isinstance(expression.valueRight, IntNumberValue):
-            return generate_number(expression.valueLeft.value * expression.valueRight.value, 0)
+            return generate_number(expression.valueLeft.value * expression.valueRight.value, self.visitor.constants, 0)
         left_reg = 6
         right_reg = 7
         right_copy = 11
@@ -91,11 +91,13 @@ class MathOperationsCodeGenerator:
         if isinstance(expression.valueLeft, IntNumberValue) and isinstance(expression.valueRight, IntNumberValue):
             if expression.valueRight.value != 0:
                 if is_modulo:
-                    return generate_number(expression.valueLeft.value % expression.valueRight.value, 0)
+                    return generate_number(
+                        expression.valueLeft.value % expression.valueRight.value, self.visitor.constants, 0)
                 else:
-                    return generate_number(expression.valueLeft.value // expression.valueRight.value, 0)
+                    return generate_number(
+                        expression.valueLeft.value // expression.valueRight.value, self.visitor.constants, 0)
             else:
-                return generate_number(0)
+                return generate_number(0, self.visitor.constants)
 
         divisor = 22
         divisor_abs = 15

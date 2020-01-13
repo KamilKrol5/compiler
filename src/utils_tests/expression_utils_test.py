@@ -239,7 +239,7 @@ def test_mul():
 @expected(0, 1, 0, 1, 0)
 def test_taking_ith_bit():
     cg = MathOperationsCodeGenerator(interpreter)
-    code: str = generate_number(1, 20)
+    code: str = generate_number(1, destination_register=20)
     code = code + cg.generate_code_for_load_ith_bit(decl_vars['g'], 20) + f'PUT\nLOAD 20\nINC\nSTORE 20\n'
     code = code + cg.generate_code_for_load_ith_bit(decl_vars['g'], 20) + f'PUT\nLOAD 20\nINC\nSTORE 20\n'
     code = code + cg.generate_code_for_load_ith_bit(decl_vars['g'], 20) + f'PUT\nLOAD 20\nINC\nSTORE 20\n'
@@ -251,13 +251,13 @@ def test_taking_ith_bit():
 @expected(0, 3, 5, 10, 4, 5, 6)
 def test_log():
     cg = MathOperationsCodeGenerator(interpreter)
-    code: str = generate_number(1, 255)
-    code = code + generate_number(11, 500)
-    code = code + generate_number(32, 520)
-    code = code + generate_number(1024, 530)
-    code = code + generate_number(24, 510)
-    code = code + generate_number(63, 540)
-    code = code + generate_number(65, 570)
+    code: str = generate_number(1, destination_register=255)
+    code = code + generate_number(11, destination_register=500)
+    code = code + generate_number(32, destination_register=520)
+    code = code + generate_number(1024, destination_register=530)
+    code = code + generate_number(24, destination_register=510)
+    code = code + generate_number(63, destination_register=540)
+    code = code + generate_number(65, destination_register=570)
     code = code + cg.generate_code_for_log(255, 15, 16) + f'PUT\n'
     code = code + cg.generate_code_for_log(500, 15, 16) + f'PUT\n'
     code = code + cg.generate_code_for_log(520, 15, 16) + f'PUT\n'
@@ -270,9 +270,9 @@ def test_log():
 
 @expected(156, 0, 32)
 def test_abs():
-    code: str = generate_number(-156, 510) + generate_abs(interpreter.label_provider) + 'PUT\n'
-    code = code + generate_number(0, 500) + generate_abs(interpreter.label_provider) + 'PUT\n'
-    code = code + generate_number(32, 520) + generate_abs(interpreter.label_provider) + 'PUT\n'
+    code: str = generate_number(-156, destination_register=510) + generate_abs(interpreter.label_provider) + 'PUT\n'
+    code = code + generate_number(0, destination_register=500) + generate_abs(interpreter.label_provider) + 'PUT\n'
+    code = code + generate_number(32, destination_register=520) + generate_abs(interpreter.label_provider) + 'PUT\n'
     return code
 
 
@@ -608,8 +608,10 @@ if __name__ == '__main__':
         test_modulo
     ]
 
-    interpreter.generated_code.append(generate_number(555, 32) + generate_number(2, 64) +
-                                      generate_number(-2000, 125) + generate_number(-666, 142))
+    interpreter.generated_code.append(generate_number(555, destination_register=32) +
+                                      generate_number(2, destination_register=64) +
+                                      generate_number(-2000, destination_register=125) +
+                                      generate_number(-666, destination_register=142))
 
     expected = flatten(t.expected for t in tests)
     interpreter.generated_code.append(''.join([t() for t in tests]))

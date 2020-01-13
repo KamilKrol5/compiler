@@ -66,6 +66,9 @@ def generate_code_for_computing_index_of_array_element_by_variable(
         arr_start = visitor.local_variables[identifier.index_identifier]
     else:
         arr_start = visitor.declared_variables[identifier.index_identifier]
-    return generate_number(visitor.declared_arrays[identifier.array_identifier][0], 5) + \
-        generate_number(visitor.declared_arrays[identifier.array_identifier][2].begin_index.value, 4) + \
+    return generate_number(
+        visitor.declared_arrays[identifier.array_identifier][0], visitor.constants, destination_register=5) + \
+        generate_number(
+            visitor.declared_arrays[identifier.array_identifier][2].begin_index.value, visitor.constants,
+            destination_register=4) + \
         f'LOAD {arr_start}\n' + f'SUB 4\n' + f'ADD 5\n'

@@ -17,7 +17,8 @@ def test_read():
 
 # Expected: 45, 555, 2, -666, -2000
 def test_write():
-    code: str = generate_number(555, 32) + generate_number(2, 64) + generate_number(-2000, 125) + generate_number(-666, 142)
+    code: str = generate_number(555, destination_register=32) + generate_number(2, destination_register=64) + \
+                generate_number(-2000, destination_register=125) + generate_number(-666, destination_register=142)
     code = code + generate_code_for_write_command(WriteCommand(IntNumberValue(45)), decl_vars, decl_arrays)
     code = code + generate_code_for_write_command(WriteCommand(IdentifierValue(VariableIdentifier('c'))), decl_vars, decl_arrays)
     code = code + generate_code_for_write_command(WriteCommand(IdentifierValue(VariableIdentifier('d'))), decl_vars, decl_arrays)

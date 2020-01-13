@@ -487,10 +487,10 @@ def test_increment_decrement_command_multiple() -> Tuple[Command, Command, Comma
 
 
 if __name__ == '__main__':
-    code_generating_constants: str = generate_number(555, 32) + generate_number(2, 64) + generate_number(-2000, 125) + \
-                                     generate_number(-666, 142) + generate_number(1000, 263) + generate_number(50, 65) +\
-                                     generate_number(-10, 66) + \
-                                     generate_number(0, 67)
+    code_generating_constants: str = generate_number(555, {}, 32) + generate_number(2, {}, 64) + generate_number(-2000, {}, 125) + \
+                                     generate_number(-666, {}, 142) + generate_number(1000, {}, 263) + generate_number(50, {}, 65) +\
+                                     generate_number(-10, {}, 66) + \
+                                     generate_number(0, {}, 67)
     # c = 555, d = 2, arr[-15] = -2000, brr[2] =  brr[d] = 1000, array_var_one = 50, array_var_two = -10, i = 0
     interpreter.generated_code.append(code_generating_constants)
     program1 = Program(Declarations([]), Commands([
