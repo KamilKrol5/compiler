@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 from abc import ABC, abstractmethod
 from structures.visitor import Visitor
 
@@ -6,7 +6,7 @@ INDENT: str = '   '
 
 
 class ASTElement:
-    starting_line: int = 0
+    start_position: Tuple[int, int] = (0, 0)
     @abstractmethod
     def accept(self, visitor: Visitor):
         pass
@@ -36,8 +36,8 @@ class IntNumberValue(Value):
     def is_static(self) -> bool:
         return True
 
-    def __init__(self, value: int, starting_line=0):
-        self.starting_line: int = starting_line
+    def __init__(self, value: int, start_position=(0, 0)):
+        self.start_position: Tuple[int, int] = start_position
         self.value = value
 
     def to_str_with_indent(self, indent=0) -> str:
@@ -48,8 +48,8 @@ class IdentifierValue(Value):
     def accept(self, visitor: Visitor):
         return visitor.visit_identifier_value(self)
 
-    def __init__(self, identifier: Identifier, starting_line=0):
-        self.starting_line: int = starting_line
+    def __init__(self, identifier: Identifier, start_position=(0, 0)):
+        self.start_position: Tuple[int, int] = start_position
         self.identifier = identifier
 
     def is_static(self) -> bool:
@@ -65,8 +65,8 @@ class VariableIdentifier(Identifier):
     def accept(self, visitor: Visitor):
         return visitor.visit_variable_identifier(self)
 
-    def __init__(self, identifier_name: str, starting_line=0):
-        self.starting_line: int = starting_line
+    def __init__(self, identifier_name: str, start_position=(0, 0)):
+        self.start_position: Tuple[int, int] = start_position
         self.identifier_name = identifier_name
 
     def to_str_with_indent(self, indent=0) -> str:
@@ -77,8 +77,8 @@ class ArrayElementByVariableIdentifier(Identifier):
     def accept(self, visitor: Visitor):
         return visitor.visit_array_element_by_variable_identifier(self)
 
-    def __init__(self, array_identifier: str, index_identifier: str, starting_line=0):
-        self.starting_line: int = starting_line
+    def __init__(self, array_identifier: str, index_identifier: str, start_position=(0, 0)):
+        self.start_position: Tuple[int, int] = start_position
         self.array_identifier = array_identifier
         self.index_identifier = index_identifier
 
@@ -91,8 +91,8 @@ class ArrayElementByIntNumberIdentifier(Identifier):
     def accept(self, visitor: Visitor):
         return visitor.visit_array_element_by_int_number_identifier(self)
 
-    def __init__(self, array_identifier: str, index_value: IntNumberValue, starting_line=0):
-        self.starting_line: int = starting_line
+    def __init__(self, array_identifier: str, index_value: IntNumberValue, start_position=(0, 0)):
+        self.start_position: Tuple[int, int] = start_position
         self.array_identifier = array_identifier
         self.index_value = index_value
 
@@ -111,8 +111,8 @@ class NumberDeclaration(Declaration):
     def accept(self, visitor: Visitor):
         return visitor.visit_number_declaration(self)
 
-    def __init__(self, identifier: str, starting_line=0):
-        self.starting_line: int = starting_line
+    def __init__(self, identifier: str, start_position=(0, 0)):
+        self.start_position: Tuple[int, int] = start_position
         self.identifier = identifier
 
     def to_str_with_indent(self, indent=0) -> str:
@@ -123,8 +123,8 @@ class ArrayDeclaration(Declaration):
     def accept(self, visitor: Visitor):
         return visitor.visit_array_declaration(self)
 
-    def __init__(self, identifier: str, begin_index: IntNumberValue, end_index: IntNumberValue, starting_line=0):
-        self.starting_line: int = starting_line
+    def __init__(self, identifier: str, begin_index: IntNumberValue, end_index: IntNumberValue, start_position=(0, 0)):
+        self.start_position: Tuple[int, int] = start_position
         self.end_index = end_index
         self.begin_index = begin_index
         self.identifier = identifier
@@ -141,8 +141,8 @@ class Declarations(ASTElement, PrintableWithIndent):
     def accept(self, visitor: Visitor):
         return visitor.visit_declarations(self)
 
-    def __init__(self, declarations: List[Declaration], starting_line=0):
-        self.starting_line: int = starting_line
+    def __init__(self, declarations: List[Declaration], start_position=(0, 0)):
+        self.start_position: Tuple[int, int] = start_position
         self.declarations = declarations
 
     def add_declaration(self, declaration: Declaration) -> None:
@@ -170,8 +170,8 @@ class ExpressionHavingOneValue(Expression):
     def accept(self, visitor: Visitor):
         return visitor.visit_expression_having_one_value(self)
 
-    def __init__(self, value: Value, starting_line=0):
-        self.starting_line: int = starting_line
+    def __init__(self, value: Value, start_position=(0, 0)):
+        self.start_position: Tuple[int, int] = start_position
         self.value = value
 
     def number_of_values(self) -> int:
@@ -186,8 +186,8 @@ class ExpressionHavingTwoValues(Expression):
     def accept(self, visitor: Visitor):
         return visitor.visit_expression_having_two_values(self)
 
-    def __init__(self, value1: Value, value2: Value, operation: str, starting_line=0):
-        self.starting_line: int = starting_line
+    def __init__(self, value1: Value, value2: Value, operation: str, start_position=(0, 0)):
+        self.start_position: Tuple[int, int] = start_position
         self.operation = operation
         self.valueLeft = value1
         self.valueRight = value2
@@ -207,8 +207,8 @@ class TwoValueCondition(Condition):
     def accept(self, visitor: Visitor):
         return visitor.visit_two_value_condition(self)
 
-    def __init__(self, value1: Value, value2: Value, compare_operation: str, starting_line=0):
-        self.starting_line: int = starting_line
+    def __init__(self, value1: Value, value2: Value, compare_operation: str, start_position=(0, 0)):
+        self.start_position: Tuple[int, int] = start_position
         self.compare_operation = compare_operation
         self.valueLeft = value1
         self.valueRight = value2
@@ -224,8 +224,8 @@ class Commands(ASTElement, PrintableWithIndent):
     def accept(self, visitor: Visitor):
         return visitor.visit_commands(self)
 
-    def __init__(self, commands: List[Command], starting_line=0):
-        self.starting_line: int = starting_line
+    def __init__(self, commands: List[Command], start_position=(0, 0)):
+        self.start_position: Tuple[int, int] = start_position
         self.commands = commands
 
     def add_command(self, command: Command) -> None:
@@ -240,8 +240,8 @@ class AssignmentCommand(Command):
     def accept(self, visitor: Visitor):
         return visitor.visit_assignment_command(self)
 
-    def __init__(self, identifier: Identifier, expression: Expression, starting_line=0):
-        self.starting_line: int = starting_line
+    def __init__(self, identifier: Identifier, expression: Expression, start_position=(0, 0)):
+        self.start_position: Tuple[int, int] = start_position
         self.expression = expression
         self.identifier = identifier
 
@@ -256,8 +256,8 @@ class IfThenElseCommand(Command):
     def accept(self, visitor: Visitor):
         return visitor.visit_if_then_else_command(self)
 
-    def __init__(self, condition: Condition, commands_true: Commands, commands_false: Commands, starting_line=0):
-        self.starting_line: int = starting_line
+    def __init__(self, condition: Condition, commands_true: Commands, commands_false: Commands, start_position=(0, 0)):
+        self.start_position: Tuple[int, int] = start_position
         self.commands_true = commands_true
         self.commands_false = commands_false
         self.condition = condition
@@ -276,8 +276,8 @@ class IfThenCommand(Command):
     def accept(self, visitor: Visitor):
         return visitor.visit_if_then_command(self)
 
-    def __init__(self, condition: Condition, commands: Commands, starting_line=0):
-        self.starting_line: int = starting_line
+    def __init__(self, condition: Condition, commands: Commands, start_position=(0, 0)):
+        self.start_position: Tuple[int, int] = start_position
         self.commands_true = commands
         self.condition = condition
 
@@ -294,8 +294,8 @@ class WhileDoCommand(Command):
     def accept(self, visitor: Visitor):
         return visitor.visit_while_do_command(self)
 
-    def __init__(self, condition: Condition, commands: Commands, is_user_command=True, starting_line=0):
-        self.starting_line: int = starting_line
+    def __init__(self, condition: Condition, commands: Commands, is_user_command=True, start_position=(0, 0)):
+        self.start_position: Tuple[int, int] = start_position
         self.commands = commands
         self.condition = condition
         self.is_user_command = is_user_command
@@ -313,8 +313,8 @@ class DoWhileCommand(Command):
     def accept(self, visitor: Visitor):
         return visitor.visit_do_while_command(self)
 
-    def __init__(self, condition: Condition, commands: Commands, starting_line=0):
-        self.starting_line: int = starting_line
+    def __init__(self, condition: Condition, commands: Commands, start_position=(0, 0)):
+        self.start_position: Tuple[int, int] = start_position
         self.commands = commands
         self.condition = condition
 
@@ -331,8 +331,8 @@ class ForCommand(Command):
     def accept(self, visitor: Visitor):
         return visitor.visit_for_command(self)
 
-    def __init__(self, iterator_identifier: str, start: Value, end: Value, is_down_to: bool, commands: Commands, starting_line=0):
-        self.starting_line: int = starting_line
+    def __init__(self, iterator_identifier: str, start: Value, end: Value, is_down_to: bool, commands: Commands, start_position=(0, 0)):
+        self.start_position: Tuple[int, int] = start_position
         self.iterator_identifier = iterator_identifier
         self.start = start
         self.end = end
@@ -354,8 +354,8 @@ class ReadCommand(Command):
     def accept(self, visitor: Visitor):
         return visitor.visit_read_command(self)
 
-    def __init__(self, identifier: Identifier, starting_line=0):
-        self.starting_line: int = starting_line
+    def __init__(self, identifier: Identifier, start_position=(0, 0)):
+        self.start_position: Tuple[int, int] = start_position
         self.identifier = identifier
 
     def to_str_with_indent(self, indent=0) -> str:
@@ -367,8 +367,8 @@ class WriteCommand(Command):
     def accept(self, visitor: Visitor):
         return visitor.visit_write_command(self)
 
-    def __init__(self, value: Value, starting_line=0):
-        self.starting_line: int = starting_line
+    def __init__(self, value: Value, start_position=(0, 0)):
+        self.start_position: Tuple[int, int] = start_position
         self.value = value
 
     def to_str_with_indent(self, indent=0) -> str:
@@ -380,8 +380,8 @@ class JumpCommand(Command):
     def accept(self, visitor: Visitor):
         return visitor.visit_jump_command(self)
 
-    def __init__(self, destination_label: str, starting_line=0):
-        self.starting_line: int = starting_line
+    def __init__(self, destination_label: str, start_position=(0, 0)):
+        self.start_position: Tuple[int, int] = start_position
         self.destination_label = destination_label
 
     def to_str_with_indent(self, indent=0) -> str:
@@ -393,8 +393,8 @@ class IncrementDecrementCommand(Command):
     def accept(self, visitor: Visitor):
         return visitor.visit_increment_decrement_command(self)
 
-    def __init__(self, identifier: VariableIdentifier, is_decrement=False, starting_line=0):
-        self.starting_line: int = starting_line
+    def __init__(self, identifier: VariableIdentifier, is_decrement=False, start_position=(0, 0)):
+        self.start_position: Tuple[int, int] = start_position
         self.identifier = identifier
         self.is_decrement = is_decrement
 
@@ -408,8 +408,8 @@ class Program(ASTElement):
     def accept(self, visitor: Visitor) -> str:
         return visitor.visit_program(self)
 
-    def __init__(self, declarations: Declarations, commands: Commands, starting_line=0):
-        self.starting_line: int = starting_line
+    def __init__(self, declarations: Declarations, commands: Commands, start_position=(0, 0)):
+        self.start_position: Tuple[int, int] = start_position
         self.commands = commands
         self.declarations = declarations
 
