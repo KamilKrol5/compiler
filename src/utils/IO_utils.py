@@ -13,9 +13,20 @@ def generate_code_for_read_command(
         visitor: 'ASTInterpreter',
 ) -> str:
     if isinstance(read_command.identifier, VariableIdentifier):
+        if read_command.identifier.identifier_name not in visitor.declared_variables:
+            raise UndeclaredVariableException(f"Undeclared variable {read_command.identifier.identifier_name}.",
+                                              occurrence_place=read_command.identifier.start_position)
+        if read_command.identifier.identifier_name in visitor.local_variables:
+            raise AnAttemptToModifyCounterException(
+                f'An attempt to modify iterator: {read_command.identifier.identifier_name}.',
+                occurrence_place=read_command.start_position)
         result: str = 'GET\n'
         result = result + f'STORE {visitor.declared_variables[read_command.identifier.identifier_name]}\n'
     elif isinstance(read_command.identifier, ArrayElementByIntNumberIdentifier):
+        arr_name = read_command.identifier.array_identifier
+        if arr_name not in visitor.declared_arrays:
+            raise UndeclaredArrayException(
+                f"An array '{arr_name}' is not declared!.", read_command.identifier.start_position)
         result: str = 'GET\n'
         real_element_index = compute_real_register_of_array_element(visitor.declared_arrays, read_command.identifier)
         result = result + f'STORE {real_element_index}\n'

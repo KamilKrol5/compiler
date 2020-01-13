@@ -16,6 +16,12 @@ from utils.math_utils import generate_number, generate_numbers, generate_numbers
 from utils.value_utils import generate_code_for_loading_value
 
 
+class CompilationException(Exception):
+    def __init__(self, message: str, occurrence_place: Tuple[int, int] = (0, 0)):
+        super().__init__(message)
+        self.occurrence_place: Tuple[int, int] = occurrence_place
+
+
 class LocalVariableAlreadyDeclaredException(Exception):
     pass
 
@@ -24,11 +30,15 @@ class AnAttemptToRemoveNonExistingLocalVariable(Exception):
     pass
 
 
-class UndeclaredVariableException(Exception):
+class UndeclaredVariableException(CompilationException):
     pass
 
 
-class AnAttemptToModifyCounterException(Exception):
+class UndeclaredArrayException(CompilationException):
+    pass
+
+
+class AnAttemptToModifyCounterException(CompilationException):
     pass
 
 
