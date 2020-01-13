@@ -146,7 +146,7 @@ if __name__ == '__main__':
         tokens = lexer.tokenize(data)
         # pprint(list(tokens))
         result: Program = parser.parse(tokens)
-        print(result)
+        # print(result)
         interpreter = ASTInterpreter(result)
         code = result.accept(visitor=interpreter)
 
