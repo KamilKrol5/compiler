@@ -8,6 +8,8 @@ from utils.utils import clean_p0, registers_used
 MODULO = 100
 DIVISION = 200
 
+GENERATING_THRESHOLD = 0
+
 # Negates number which is in register 0 (p0)
 # Registers used: 0-1
 @registers_used(0, 1)
@@ -28,13 +30,18 @@ def generate_abs(label_provider: LabelProvider) -> str:
 def generate_number(x: int, constants: Dict[int, int] = None, destination_register=0) -> str:
     if constants is None:
         constants = dict()
-    if x in constants.keys():
-        # print(f'loading {x} from {constants[x]}\n')
-        if destination_register != 0:
-            return f'LOAD {constants[x]}\nSTORE {destination_register}\n'
-        return f'LOAD {constants[x]}\n'
+    if abs(x) >= GENERATING_THRESHOLD:
+        if x in constants.keys():
+            # print(f'loading {x} from {constants[x]}\n')
+            if destination_register != 0:
+                return f'LOAD {constants[x]}\nSTORE {destination_register}\n'
+            return f'LOAD {constants[x]}\n'
     one_register: int = 1
-    result: str = clean_p0() + f'INC\nSTORE {one_register}\nDEC\n'
+    if 1 in constants:
+        one_register = constants[1]
+        result: str = clean_p0()
+    else:
+        result: str = clean_p0() + f'INC\nSTORE {one_register}\nDEC\n'
 
     is_negative = x < 0
     x = abs(x)

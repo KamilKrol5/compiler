@@ -4,7 +4,7 @@ from utils.AST_interpreter import ASTInterpreter
 from utils.IO_utils import generate_code_for_write_command
 from utils.expression_utils import generate_code_for_expression
 from utils.math_operations_code_generator import MathOperationsCodeGenerator
-from utils.math_utils import generate_number, generate_abs, generate_numbers
+from utils.math_utils import generate_number, generate_abs, generate_numbers, generate_numbers_naive
 from utils.test_utils import expected, get_numbers_from_run_code, flatten
 
 decl_vars = {"c": 32, "d": 64, "e": 123, "f": 120, "g": 121, 'm_seven': 54, 'seven': 53, 'tw_four': 51, 'm_tw_four': 50,
@@ -15,6 +15,7 @@ decl_arrays = {
 
 program = Program(Declarations([]), Commands([]))
 interpreter = ASTInterpreter(program)
+interpreter.constants = {1: 960, 2: 961, -8555: 962, 54211: 963, -4000: 964, 5: 965}
 interpreter.declared_variables.update(decl_vars)
 interpreter.declared_arrays.update(decl_arrays)
 
@@ -25,7 +26,8 @@ def init() -> str:
     expr2 = ExpressionHavingOneValue(IntNumberValue(20))
     expr3 = ExpressionHavingOneValue(IntNumberValue(-15))
     expr4 = ExpressionHavingOneValue(IntNumberValue(-14))
-    code: str = generate_code_for_expression(expr1, interpreter) + f'STORE {decl_arrays["arr"][0] + 5 }\n'  # arr[-15]=10
+    code: str = generate_numbers_naive(interpreter.constants)
+    code = code + generate_code_for_expression(expr1, interpreter) + f'STORE {decl_arrays["arr"][0] + 5 }\n'  # arr[-15]=10
     code = code + generate_code_for_expression(expr2, interpreter) + f'STORE {decl_arrays["arr"][0] + 6 }\n'  # arr[-14]=20
     code = code + generate_code_for_expression(expr3, interpreter) + f'STORE {decl_vars["e"]}\n'  # e = -15
     code = code + generate_code_for_expression(expr4, interpreter) + f'STORE {decl_vars["f"]}\n'  # f = -14
@@ -597,6 +599,23 @@ def test_modulo() -> str:
     return code
 
 
+@expected(-95, 12, 1, 2, -8555, 54211, -4000, 5, 978455978546132456, 1, 1, 12)
+def test_generate_number() -> str:
+    code: str = generate_number(-95) + f'PUT\n'
+    code = code + generate_number(12) + f'PUT\n'
+    code = code + generate_number(1) + f'PUT\n'
+    code = code + generate_number(2) + f'PUT\n'
+    code = code + generate_number(-8555) + f'PUT\n'
+    code = code + generate_number(54211) + f'PUT\n'
+    code = code + generate_number(-4000) + f'PUT\n'
+    code = code + generate_number(5) + f'PUT\n'
+    code = code + generate_number(978455978546132456) + f'PUT\n'
+    code = code + generate_number(1) + f'PUT\n'
+    code = code + generate_number(1) + f'PUT\n'
+    code = code + generate_number(12) + f'PUT\n'
+    return code
+
+
 if __name__ == '__main__':
     tests = [
         init,
@@ -605,7 +624,7 @@ if __name__ == '__main__':
         test_divide,
         test_log,
         test_modulo_big_numbers,
-        test_modulo
+        test_modulo, test_generate_number
     ]
 
     interpreter.generated_code.append(generate_number(555, destination_register=32) +
