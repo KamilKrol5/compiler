@@ -20,19 +20,25 @@ def generate_code_for_loading_value(
             elif value.identifier.identifier_name in visitor.local_variables.keys():
                 return f'LOAD {visitor.local_variables[value.identifier.identifier_name]}\n'
             else:
-                ValueError('Neither declared_variables nor local_variables dictionary '
-                           'does not contain key - identifier name provided with '
-                           'write_command`s property - identifier. '
-                           f'Variable {value.identifier.identifier_name} might not be declared.')
+                UndeclaredVariableException(
+                    'Neither declared_variables nor local_variables dictionary '
+                    'does not contain key - identifier name provided with '
+                    'write_command`s property - identifier. '
+                    f'Variable {value.identifier.identifier_name} might not be declared.',
+                    occurrence_place=value.identifier.start_position)
         elif isinstance(value.identifier, ArrayElementByIntNumberIdentifier):
             if value.identifier.array_identifier not in visitor.declared_arrays.keys():
-                ValueError('declared_arrays dictionary does not contain key - identifier name provided with '
-                           'write_command`s property - identifier. Variable might not be declared.')
+                UndeclaredArrayException(
+                    'declared_arrays dictionary does not contain key - identifier name provided with '
+                    f"write_command`s property - identifier. Variable '{value.identifier.array_identifier}' "
+                    f"might not be declared.", occurrence_place=value.identifier.start_position)
             return f'LOAD {compute_real_register_of_array_element(visitor.declared_arrays, value.identifier)}\n'
         elif isinstance(value.identifier, ArrayElementByVariableIdentifier):
             if value.identifier.array_identifier not in visitor.declared_arrays.keys():
-                ValueError('declared_arrays dictionary does not contain key - identifier name provided with '
-                           'write_command`s property - identifier. Variable might not be declared.')
+                UndeclaredArrayException(
+                    'declared_arrays dictionary does not contain key - identifier name provided with '
+                    f"write_command`s property - identifier. Variable '{value.identifier.array_identifier}' "
+                    f"might not be declared.", occurrence_place=value.identifier.start_position)
             loading_array_element: str = generate_code_for_loading_array_element_by_variable(
                 value.identifier, visitor)
             return loading_array_element
@@ -55,19 +61,21 @@ def compute_value_register(
         visitor: 'ASTInterpreter'
 ) -> int:
     if isinstance(value.identifier, VariableIdentifier):
-        if value.identifier.identifier_name in visitor.declared_variables.keys():
-            return visitor.declared_variables[value.identifier.identifier_name]
-        elif value.identifier.identifier_name in visitor.local_variables.keys():
-            return visitor.local_variables[value.identifier.identifier_name]
+        if value.identifier.identifier_name not in visitor.declared_variables.keys():
+            UndeclaredVariableException(
+                'Neither declared_variables nor local_variables dictionary '
+                'does not contain key - identifier name provided with '
+                f'write_command`s property - identifier. '
+                f'Variable {value.identifier.identifier_name} might not be declared.',
+                occurrence_place=value.identifier.start_position)
         else:
-            ValueError('Neither declared_variables nor local_variables dictionary '
-                       'does not contain key - identifier name provided with '
-                       f'write_command`s property - identifier. '
-                       f'Variable {value.identifier.identifier_name} might not be declared.')
+            return visitor.declared_variables[value.identifier.identifier_name]
     elif isinstance(value.identifier, ArrayElementByIntNumberIdentifier):
         if value.identifier.array_identifier not in visitor.declared_arrays.keys():
-            ValueError('declared_arrays dictionary does not contain key - identifier name provided with '
-                       'write_command`s property - identifier. Variable might not be declared.')
+            UndeclaredArrayException(
+                'declared_arrays dictionary does not contain key - identifier name provided with '
+                f"write_command`s property - identifier. Variable '{value.identifier.array_identifier}'"
+                f" might not be declared.", occurrence_place=value.start_position)
         return compute_real_register_of_array_element(visitor.declared_arrays, value.identifier)
     elif isinstance(value.identifier, ArrayElementByVariableIdentifier):
         raise ValueError('Cannot compute register of value which identifier is ArrayElementByVariableIdentifier.'
