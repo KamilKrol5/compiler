@@ -24,6 +24,14 @@ class AnAttemptToRemoveNonExistingLocalVariable(Exception):
     pass
 
 
+class UndeclaredVariableException(Exception):
+    pass
+
+
+class AnAttemptToModifyCounterException(Exception):
+    pass
+
+
 class DefaultConstant:
     def __init__(self, name: str, value: int):
         self.name: str = name

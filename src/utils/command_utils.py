@@ -2,10 +2,6 @@ from utils.AST_interpreter import *
 from utils.value_utils import generate_code_for_loading_value
 
 
-class AnAttemptToModifyCounterException(Exception):
-    pass
-
-
 ''' Writes code for if then command in visitor.
     All its sub-commands are generated too.'''
 
