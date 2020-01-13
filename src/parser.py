@@ -1,5 +1,4 @@
 import sys
-from pprint import pprint
 
 from sly import Parser
 
@@ -130,6 +129,9 @@ class CompilerParser(Parser):
     @_('IDENTIFIER "(" NUMBER ")"')
     def identifier(self, p) -> ArrayElementByIntNumberIdentifier:
         return ArrayElementByIntNumberIdentifier(p.IDENTIFIER, IntNumberValue(int(p.NUMBER)))
+
+    def error(self, token):
+        print(f"ERROR for token: {token}\n")
 
 
 if __name__ == '__main__':

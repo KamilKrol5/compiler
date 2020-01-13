@@ -59,7 +59,7 @@ class CompilerLexer(Lexer):
         self.lineno += t.value.count('\n')
 
     def error(self, t):
-        print(f'Illegal character {t.value[0]}')
+        print(f'Illegal character in line {self.lineno}: {t.value[0]}')
         self.index += 1
 
 
