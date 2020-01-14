@@ -55,8 +55,6 @@ def generate_code_for_storing_array_element_by_variable(
     Registers used: 0-5'''
 
 
-# TODO
-# can be improved, numbers which are generated can be generated once when program starts
 # and taken from known registers
 def generate_code_for_computing_index_of_array_element_by_variable(
         identifier: ArrayElementByVariableIdentifier,
@@ -65,14 +63,19 @@ def generate_code_for_computing_index_of_array_element_by_variable(
     if identifier.index_identifier not in visitor.declared_variables:
         raise UndeclaredVariableException(f"Variable '{identifier.index_identifier}' was not declared.",
                                           occurrence_place=identifier.start_position)
-    else:
-        arr_start = visitor.declared_variables[identifier.index_identifier]
     if identifier.array_identifier not in visitor.declared_arrays:
         raise UndeclaredArrayException(f"Array '{identifier.array_identifier}' was not declared.",
                                        occurrence_place=identifier.start_position)
+
+    arr_start = visitor.declared_variables[identifier.index_identifier]
+    # return generate_number(
+    #     visitor.declared_arrays[identifier.array_identifier][0], visitor.constants, destination_register=5) + \
+    #     generate_number(
+    #         visitor.declared_arrays[identifier.array_identifier][2].begin_index.value, visitor.constants,
+    #         destination_register=4) + \
+    #     f'LOAD {arr_start}\n' + f'SUB 4\n' + f'ADD 5\n'
     return generate_number(
-        visitor.declared_arrays[identifier.array_identifier][0], visitor.constants, destination_register=5) + \
-        generate_number(
-            visitor.declared_arrays[identifier.array_identifier][2].begin_index.value, visitor.constants,
-            destination_register=4) + \
-        f'LOAD {arr_start}\n' + f'SUB 4\n' + f'ADD 5\n'
+        visitor.declared_arrays[identifier.array_identifier][0] -
+        visitor.declared_arrays[identifier.array_identifier][2].begin_index.value,
+        visitor.constants, destination_register=5) + \
+        f'LOAD {arr_start}\n' + f'ADD 5\n'
