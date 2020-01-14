@@ -128,7 +128,7 @@ class MathOperationsCodeGenerator:
         reminder = 17
         quotient = 18
         counter = 19
-        number_copy = 20
+        log = 20
         register_to_return = reminder if is_modulo else quotient
         minus_one = self.visitor.declared_variables[self.MINUS_ONE_VAR_NAME]
         one = self.visitor.declared_variables[self.ONE_VAR_NAME]
@@ -160,18 +160,20 @@ class MathOperationsCodeGenerator:
             f'LOAD{divisor}',
             generate_abs(self.visitor.label_provider),
             f'STORE{divisor_abs}',  # division uses only positive numbers, so abs was called
-            f'LOAD {number_abs}',
-            f'SHIFT {one}',
-            f'STORE {number_copy}',
+            # f'LOAD {number_abs}',
+            # f'SHIFT {one}',
+            # f'STORE {number_copy}',
             self.generate_code_for_log(number_abs, counter, 21),  # we iterate log(n) + 1 times
             f'INC',
             f'STORE {counter}',  # counter = log(n) + 1
+            f'INC',
+            f'STORE {log}',
         ]
         code_2: List[str] = [
             f'{label_start}',  # beginning of a loop
-            f'LOAD {number_copy}',
-            f'SHIFT {minus_one}',
-            f'STORE {number_copy}',  # n_copy = number_abs >> 1
+            f'LOAD {log}',
+            f'DEC',
+            f'STORE {log}',
             f'JZERO {label_end}',
             f'LOAD {reminder}',
             f'SHIFT {one}',
