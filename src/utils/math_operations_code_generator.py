@@ -59,24 +59,46 @@ class MathOperationsCodeGenerator:
         minus_one_reg = self.visitor.declared_variables[self.MINUS_ONE_VAR_NAME]
         one_reg = self.visitor.declared_variables[self.ONE_VAR_NAME]
 
-        result: str = f'SUB 0\n' + f'STORE {res_reg}\n' + \
-                      generate_code_for_loading_value(expression.valueLeft, self.visitor) + \
-                      f'STORE {left_reg}\n' + \
-                      generate_code_for_loading_value(expression.valueRight, self.visitor) + \
-                      f'STORE {right_reg}\n' + \
-                      f'JPOS {label_r_positive}\n' + negate_number() + f'{label_r_positive}\n' \
-                      f'STORE {right_copy}\n'  # if right >0 then nothing
-        result = result + f'{label_again}\n' + f'LOAD {right_copy}\n' + f'SHIFT {minus_one_reg}\n' + \
-            f'SHIFT {one_reg}\n' + compare_values_knowing_registers(0, right_copy) + f'JZERO {label_do_nothing}\n'
-        # else add left to res ^
-        result = result + f'LOAD {res_reg}\nADD {left_reg}\nSTORE {res_reg}\n{label_do_nothing}\n'
-        result = result + f'LOAD {right_copy}\nSHIFT {minus_one_reg}\nSTORE {right_copy}\n' \
-            f'LOAD {left_reg}\nSHIFT {one_reg}\nSTORE {left_reg}\n'
-        result = result + f'LOAD {right_copy}\nJPOS {label_again}\n' \
-            f'LOAD {right_reg}\nJPOS {label_r_positive2}\nLOAD {res_reg}\n' + negate_number() + f'JUMP {end}\n' + \
-            f'{label_r_positive2}\nLOAD {res_reg}\n{end}\n'  # right > 0
+        result = [
+            f'SUB 0',
+            f'STORE {res_reg}',
+            generate_code_for_loading_value(expression.valueLeft, self.visitor),
+            f'STORE {left_reg}',
+            generate_code_for_loading_value(expression.valueRight, self.visitor),
+            f'STORE {right_reg}',
+            f'JPOS {label_r_positive}',
+            negate_number(),
+            f'{label_r_positive}',
+            f'STORE {right_copy}',  # if right >0 then nothing
+            f'{label_again}',
+            f'LOAD {right_copy}',
+            f'SHIFT {minus_one_reg}',  # else add left to res ^
+            f'SHIFT {one_reg}',
+            compare_values_knowing_registers(0, right_copy),
+            f'JZERO {label_do_nothing}',
+            f'LOAD {res_reg}',
+            f'ADD {left_reg}',
+            f'STORE {res_reg}',
+            f'{label_do_nothing}',
+            f'LOAD {right_copy}',
+            f'SHIFT {minus_one_reg}',
+            f'STORE {right_copy}',
+            f'LOAD {left_reg}',
+            f'SHIFT {one_reg}',
+            f'STORE {left_reg}',
+            f'LOAD {right_copy}',
+            f'JPOS {label_again}',
+            f'LOAD {right_reg}',
+            f'JPOS {label_r_positive2}',
+            f'LOAD {res_reg}',
+            negate_number(),
+            f'JUMP {end}',
+            f'{label_r_positive2}',
+            f'LOAD {res_reg}',
+            f'{end}'  # right > 0
+        ]
 
-        return result
+        return '\n'.join(result) + '\n'
 
     # Registers used: 0-?, 10-23
     def _generate_code_for_division(self, expression: ExpressionHavingTwoValues) -> str:
