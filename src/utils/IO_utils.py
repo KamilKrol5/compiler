@@ -1,6 +1,7 @@
 from utils.AST_interpreter import *
 from utils.arrays_utils import compute_real_register_of_array_element, \
     generate_code_for_computing_index_of_array_element_by_variable
+from utils.compilation_exceptions import AnAttemptToModifyCounterException
 from utils.value_utils import generate_code_for_loading_value
 from structures.ast.AST import ReadCommand, WriteCommand, VariableIdentifier, \
     ArrayElementByIntNumberIdentifier, ArrayElementByVariableIdentifier

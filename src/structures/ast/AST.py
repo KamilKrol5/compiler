@@ -72,6 +72,9 @@ class VariableIdentifier(Identifier):
     def to_str_with_indent(self, indent=0) -> str:
         return indent * INDENT + f'<VariableIdentifier[ identifier_name = {self.identifier_name} ]>'
 
+    def __str__(self):
+        return self.identifier_name
+
 
 class ArrayElementByVariableIdentifier(Identifier):
     def accept(self, visitor: Visitor):
@@ -85,6 +88,9 @@ class ArrayElementByVariableIdentifier(Identifier):
     def to_str_with_indent(self, indent=0) -> str:
         return indent * INDENT + f'<ArrayElementByVariableIdentifier[ array_identifier = {self.array_identifier}, ' \
             f'index_identifier = {self.index_identifier} ]>'
+
+    def __str__(self):
+        return self.array_identifier + f'({self.index_identifier})'
 
 
 class ArrayElementByIntNumberIdentifier(Identifier):
@@ -101,6 +107,8 @@ class ArrayElementByIntNumberIdentifier(Identifier):
             f'index_value = \n{self.index_value.to_str_with_indent(indent + 1)}\n' + \
             indent * INDENT + ']>'
 
+    def __str__(self):
+        return f'{self.array_identifier}({self.index_value.value})'
 
 class Declaration(ABC, ASTElement, PrintableWithIndent):
     identifier = None

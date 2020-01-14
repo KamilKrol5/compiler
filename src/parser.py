@@ -6,6 +6,7 @@ from label_converter.label_converter import convert_labels_to_registers
 from lexer import CompilerLexer
 from structures.ast.AST import *
 from utils.AST_interpreter import ASTInterpreter
+from utils.compilation_exceptions import CompilationException
 from utils.test_utils import run_code
 from utils.utils import write_to_file
 
@@ -24,23 +25,30 @@ class CompilerParser(Parser):
 
     @_('declarations "," IDENTIFIER')
     def declarations(self, p) -> Declarations:
-        p.declarations.add_declaration(NumberDeclaration(p.IDENTIFIER))
+        p.declarations.add_declaration(NumberDeclaration(p.IDENTIFIER, start_position=(p.lineno, p.index)))
         return p.declarations
 
     @_('declarations "," IDENTIFIER "(" NUMBER ":" NUMBER ")"')
     def declarations(self, p) -> Declarations:
-        p.declarations.add_declaration(ArrayDeclaration(p.IDENTIFIER, begin_index=IntNumberValue(int(p.NUMBER0)),
-                                                        end_index=IntNumberValue(int(p.NUMBER1))))
+        p.declarations.add_declaration(ArrayDeclaration(
+            p.IDENTIFIER,
+            begin_index=IntNumberValue(int(p.NUMBER0), start_position=(p.lineno, p.index)),
+            end_index=IntNumberValue(int(p.NUMBER1), start_position=(p.lineno, p.index)),
+            start_position=(p.lineno, p.index)))
         return p.declarations
 
     @_('IDENTIFIER')
     def declarations(self, p) -> Declarations:
-        return Declarations(declarations=[NumberDeclaration(p.IDENTIFIER)])
+        return Declarations(declarations=[NumberDeclaration(p.IDENTIFIER, start_position=(p.lineno, p.index))],
+                            start_position=(p.lineno, p.index))
 
     @_('IDENTIFIER "(" NUMBER ":" NUMBER ")"')
     def declarations(self, p) -> Declarations:
-        return Declarations(declarations=[ArrayDeclaration(p.IDENTIFIER, begin_index=IntNumberValue(int(p.NUMBER0)),
-                                                           end_index=IntNumberValue(int(p.NUMBER1)))])
+        return Declarations(declarations=[ArrayDeclaration(
+            p.IDENTIFIER,
+            begin_index=IntNumberValue(int(p.NUMBER0), start_position=(p.lineno, p.index)),
+            end_index=IntNumberValue(int(p.NUMBER1), start_position=(p.lineno, p.index)))],
+                            start_position=(p.lineno, p.index))
 
     @_('commands command')
     def commands(self, p) -> Commands:
@@ -53,41 +61,41 @@ class CompilerParser(Parser):
 
     @_('identifier ASSIGN expression ";"')
     def command(self, p) -> AssignmentCommand:
-        return AssignmentCommand(p.identifier, p.expression)
+        return AssignmentCommand(p.identifier, p.expression, start_position=(p.lineno, p.index))
 
     @_('IF condition THEN commands ELSE commands ENDIF')
     def command(self, p) -> IfThenElseCommand:
-        return IfThenElseCommand(p.condition, p.commands0, p.commands1)
+        return IfThenElseCommand(p.condition, p.commands0, p.commands1, start_position=(p.lineno, p.index))
 
     @_('IF condition THEN commands ENDIF')
     def command(self, p) -> IfThenCommand:
-        return IfThenCommand(p.condition, p.commands)
+        return IfThenCommand(p.condition, p.commands, start_position=(p.lineno, p.index))
 
     @_('WHILE condition DO commands ENDWHILE')
     def command(self, p) -> WhileDoCommand:
-        return WhileDoCommand(p.condition, p.commands)
+        return WhileDoCommand(p.condition, p.commands, start_position=(p.lineno, p.index))
 
     @_('DO commands WHILE condition ENDDO')
     def command(self, p) -> DoWhileCommand:
-        return DoWhileCommand(p.condition, p.commands)
+        return DoWhileCommand(p.condition, p.commands, start_position=(p.lineno, p.index))
 
     @_('FOR IDENTIFIER FROM value TO value DO commands ENDFOR')
     def command(self, p) -> ForCommand:
         return ForCommand(iterator_identifier=p.IDENTIFIER, start=p.value0,
-                          end=p.value1, is_down_to=False, commands=p.commands)
+                          end=p.value1, is_down_to=False, commands=p.commands, start_position=(p.lineno, p.index))
 
     @_('FOR IDENTIFIER FROM value DOWNTO value DO commands ENDFOR')
     def command(self, p) -> ForCommand:
         return ForCommand(iterator_identifier=p.IDENTIFIER, start=p.value0,
-                          end=p.value1, is_down_to=True, commands=p.commands)
+                          end=p.value1, is_down_to=True, commands=p.commands, start_position=(p.lineno, p.index))
 
     @_('READ identifier ";"')
     def command(self, p) -> ReadCommand:
-        return ReadCommand(p.identifier)
+        return ReadCommand(p.identifier, start_position=(p.lineno, p.index))
 
     @_('WRITE value ";"')
     def command(self, p) -> WriteCommand:
-        return WriteCommand(p.value)
+        return WriteCommand(p.value, start_position=(p.lineno, p.index))
 
     @_('value')
     def expression(self, p) -> ExpressionHavingOneValue:
@@ -99,7 +107,8 @@ class CompilerParser(Parser):
        'value DIV value',
        'value MOD value')
     def expression(self, p) -> ExpressionHavingTwoValues:
-        return ExpressionHavingTwoValues(value1=p.value0, value2=p.value1, operation=p[1])
+        return ExpressionHavingTwoValues(value1=p.value0, value2=p.value1, operation=p[1],
+                                         start_position=(p.lineno, p.index))
 
     @_('value EQ value',
        'value NEQ value',
@@ -108,11 +117,11 @@ class CompilerParser(Parser):
        'value LEQ value',
        'value GEQ value')
     def condition(self, p) -> TwoValueCondition:
-        return TwoValueCondition(p.value0, p.value1, p[1])
+        return TwoValueCondition(p.value0, p.value1, p[1], start_position=(p.lineno, p.index))
 
     @_('NUMBER')
     def value(self, p) -> IntNumberValue:
-        return IntNumberValue(int(p.NUMBER))
+        return IntNumberValue(int(p.NUMBER), start_position=(p.lineno, p.index))
 
     @_('identifier')
     def value(self, p) -> IdentifierValue:
@@ -120,18 +129,21 @@ class CompilerParser(Parser):
 
     @_('IDENTIFIER')
     def identifier(self, p) -> VariableIdentifier:
-        return VariableIdentifier(p.IDENTIFIER)
+        return VariableIdentifier(p.IDENTIFIER, start_position=(p.lineno, p.index))
 
     @_('IDENTIFIER "(" IDENTIFIER ")"')
     def identifier(self, p) -> ArrayElementByVariableIdentifier:
-        return ArrayElementByVariableIdentifier(p.IDENTIFIER0, p.IDENTIFIER1)
+        return ArrayElementByVariableIdentifier(p.IDENTIFIER0, p.IDENTIFIER1, start_position=(p.lineno, p.index))
 
     @_('IDENTIFIER "(" NUMBER ")"')
     def identifier(self, p) -> ArrayElementByIntNumberIdentifier:
-        return ArrayElementByIntNumberIdentifier(p.IDENTIFIER, IntNumberValue(int(p.NUMBER)))
+        return ArrayElementByIntNumberIdentifier(
+            p.IDENTIFIER, IntNumberValue(int(p.NUMBER),
+                                         start_position=(p.lineno, p.index)),
+            start_position=(p.lineno, p.index))
 
     def error(self, token):
-        print(f"ERROR for token: {token}\n")
+        print(f"ERROR for token: {token}\n", token.lineno, token.index)
 
 
 if __name__ == '__main__':
@@ -149,15 +161,20 @@ if __name__ == '__main__':
         # pprint(list(tokens))
         result: Program = parser.parse(tokens)
         # print(result)
-        interpreter = ASTInterpreter(result)
-        code = result.accept(visitor=interpreter)
+        try:
+            print(f"Compiling {src_file}.")
+            interpreter = ASTInterpreter(result)
+            code = result.accept(visitor=interpreter)
 
-        if len(sys.argv) >= 3 and sys.argv[2] == '--run':
-            print('RUNNING CODE')
-            out = run_code(code, f'{src_file}.intermediate', f'exe_{src_file}', *sys.argv[3:],
-                           path_to_vm='../../maszyna_wirtualna/maszyna-wirtualna-cln')
-            print(out)
-        else:
-            write_to_file(f"{src_file}.out", code)
-            convert_labels_to_registers(f"{src_file}.out")
+            if len(sys.argv) >= 3 and sys.argv[2] == '--run':
+                print('RUNNING CODE')
+                out = run_code(code, f'{src_file}.intermediate', f'exe_{src_file}', *sys.argv[3:],
+                               path_to_vm='../../maszyna_wirtualna/maszyna-wirtualna-cln')
+                print(out)
+            else:
+                write_to_file(f"{src_file}.out", code)
+                convert_labels_to_registers(f"{src_file}.out")
+        except CompilationException as e:
+            print(f'A compilation error has occurred in line {e.occurrence_place[0]}. {e}')
+
 

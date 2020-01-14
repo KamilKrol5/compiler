@@ -1,4 +1,5 @@
 from utils.AST_interpreter import *
+from utils.compilation_exceptions import AnAttemptToModifyCounterException
 from utils.value_utils import generate_code_for_loading_value
 
 

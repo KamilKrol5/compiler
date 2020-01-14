@@ -6,6 +6,8 @@ from utils.IO_utils import generate_code_for_write_command, generate_code_for_re
 from utils.command_utils import write_code_for_if_then_command, write_code_for_if_then_else_command, \
     write_code_for_assignment_command, write_code_for_while_do_command, write_code_for_do_while_command, \
     write_code_for_for_loop_command
+from utils.compilation_exceptions import MultipleDeclarationException, LocalVariableAlreadyDeclaredException, \
+    AnAttemptToRemoveNonExistingLocalVariable, UndeclaredArrayException, UndeclaredVariableException
 from utils.expression_utils import generate_code_for_expression
 from utils.label_provider import LabelProvider
 from utils.loop_utils import generate_condition
@@ -14,36 +16,6 @@ from utils.arrays_utils import generate_code_for_computing_index_of_array_elemen
 from structures.ast.identifier_register_representation import *
 from utils.math_utils import generate_number, generate_numbers, generate_numbers_naive
 from utils.value_utils import generate_code_for_loading_value
-
-
-class CompilationException(Exception):
-    def __init__(self, message: str, occurrence_place: Tuple[int, int] = (0, 0)):
-        super().__init__(message)
-        self.occurrence_place: Tuple[int, int] = occurrence_place
-
-
-class LocalVariableAlreadyDeclaredException(Exception):
-    pass
-
-
-class AnAttemptToRemoveNonExistingLocalVariable(Exception):
-    pass
-
-
-class UndeclaredVariableException(CompilationException):
-    pass
-
-
-class UndeclaredArrayException(CompilationException):
-    pass
-
-
-class AnAttemptToModifyCounterException(CompilationException):
-    pass
-
-
-class MultipleDeclarationException(CompilationException):
-    pass
 
 
 class DefaultConstant:
@@ -107,7 +79,7 @@ class ASTInterpreter(Visitor):
             if isinstance(declaration, NumberDeclaration):
                 if declaration.identifier in self.declared_variables:
                     raise MultipleDeclarationException(
-                        f"Variable {declaration.identifier} is already defined.",
+                        f"Variable '{declaration.identifier}' is already defined.",
                         occurrence_place=declaration.start_position)
                 self.declared_variables[declaration.identifier] = self.VARIABLES_START_REGISTER + 1
             elif isinstance(declaration, ArrayDeclaration):
@@ -247,6 +219,10 @@ class ASTInterpreter(Visitor):
             self,
             array_element_by_int_number_identifier: 'ArrayElementByIntNumberIdentifier'
     ) -> AbstractIdentifierAccess:
+        if array_element_by_int_number_identifier.array_identifier not in self.declared_arrays:
+            raise UndeclaredArrayException(
+                f"Array '{array_element_by_int_number_identifier.array_identifier}' was not declared.",
+                occurrence_place=array_element_by_int_number_identifier.start_position)
         return StaticIdentifierAccess(
             compute_real_register_of_array_element(
                 self.declared_arrays, array_element_by_int_number_identifier)
@@ -256,6 +232,9 @@ class ASTInterpreter(Visitor):
 
     def visit_variable_identifier(
             self, variable_identifier: 'VariableIdentifier') -> AbstractIdentifierAccess:
+        if variable_identifier.identifier_name not in self.declared_variables:
+            raise UndeclaredVariableException(f"Variable '{variable_identifier.identifier_name}' was not declared.",
+                                              occurrence_place=variable_identifier.start_position)
         return StaticIdentifierAccess(
             self.declared_variables[variable_identifier.identifier_name]
         )
