@@ -297,8 +297,8 @@ def test_divide_big_numbers() -> str:
     return code
 
 
-@expected(7, 0, 0, 2, 5, 2, 0, 0, 3, -4, -4, 3, 3, -4, -4, 3, 1, 0, 0, 0)
-def test_divide() -> str:
+@expected(7, 0, 0, 2, 5, 2, 0, 0, 3, -4, -4, 3, 3, -4, -4, 3, 0, 0, 0)
+def test_divide_all() -> str:
     code: str = generate_code_for_expression(
         ExpressionHavingTwoValues(
             IntNumberValue(76),
@@ -414,13 +414,6 @@ def test_divide() -> str:
     code = code + generate_code_for_expression(
         ExpressionHavingTwoValues(
             IdentifierValue(VariableIdentifier('one')),
-            IdentifierValue(VariableIdentifier('one')),
-            'DIV'
-        ), visitor=interpreter
-    ) + 'PUT\n'
-    code = code + generate_code_for_expression(
-        ExpressionHavingTwoValues(
-            IdentifierValue(VariableIdentifier('one')),
             IdentifierValue(VariableIdentifier('zero')),
             'DIV'
         ), visitor=interpreter
@@ -436,6 +429,39 @@ def test_divide() -> str:
         ExpressionHavingTwoValues(
             IdentifierValue(VariableIdentifier('zero')),
             IdentifierValue(VariableIdentifier('zero')),
+            'DIV'
+        ), visitor=interpreter
+    ) + 'PUT\n'
+    return code
+
+
+@expected(1, -1, -1, 1)
+def test_divide_ones() -> str:
+    code = generate_code_for_expression(
+        ExpressionHavingTwoValues(
+            IdentifierValue(VariableIdentifier('one')),
+            IdentifierValue(VariableIdentifier('one')),
+            'DIV'
+        ), visitor=interpreter
+    ) + 'PUT\n'
+    code = code + generate_code_for_expression(
+        ExpressionHavingTwoValues(
+            IdentifierValue(VariableIdentifier('one')),
+            IdentifierValue(VariableIdentifier('m_one')),
+            'DIV'
+        ), visitor=interpreter
+    ) + 'PUT\n'
+    code = code + generate_code_for_expression(
+        ExpressionHavingTwoValues(
+            IdentifierValue(VariableIdentifier('m_one')),
+            IdentifierValue(VariableIdentifier('one')),
+            'DIV'
+        ), visitor=interpreter
+    ) + 'PUT\n'
+    code = code + generate_code_for_expression(
+        ExpressionHavingTwoValues(
+            IdentifierValue(VariableIdentifier('m_one')),
+            IdentifierValue(VariableIdentifier('m_one')),
             'DIV'
         ), visitor=interpreter
     ) + 'PUT\n'
@@ -621,7 +647,8 @@ if __name__ == '__main__':
         init,
         test_single_val_expr, test_add, test_sub, test_mul, test_taking_ith_bit, test_abs,
         test_divide_big_numbers,
-        test_divide,
+        test_divide_all,
+        test_divide_ones,
         test_log,
         test_modulo_big_numbers,
         test_modulo, test_generate_number
@@ -636,8 +663,8 @@ if __name__ == '__main__':
     interpreter.generated_code.append(''.join([t() for t in tests]))
     code_all = program.accept(interpreter)
     returned: List[int] = get_numbers_from_run_code(code_all, 'expr_test.txt', 'exe_expr_test.txt')
-    pprint(f'Expected: {expected}')
-    pprint(f'Returned: {returned}')
+    pprint(f'Expected: {expected}', width=100)
+    pprint(f'Returned: {returned}', width=100)
     print('unmatched: (result number, (expected, returned))')
     pprint(list((i, (e, r)) for i, (e, r) in enumerate(zip(expected, returned)) if e != r))
     assert expected == returned
