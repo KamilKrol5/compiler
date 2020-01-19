@@ -187,8 +187,6 @@ def write_code_for_for_loop_command(
     iterator_variable: str = loop.iterator_identifier
     end_variable: str = f'{loop_name}_@end'
 
-    # counter_var: str = f'{loop_name}_@counter'  # stores an amount of iterations to be performed
-
     # iterator and counter_var declaration (as a local variables)
     # check if iterator name can be declared will be performed, error if there is a variable with the same name declared
     visitor.add_local_variable(iterator_variable)
@@ -207,28 +205,46 @@ def write_code_for_for_loop_command(
     code = code + generate_code_for_loading_value(loop.start, visitor)
     code = code + f'STORE {iterator_reg} # {iterator_variable}\n'  # loop.start load into iteration_register
 
-    # # load abs(loop.end - loop.start) + 1 into counter_reg
-    # code = code + generate_code_for_expression(ExpressionHavingTwoValues(loop.end, loop.start, 'MINUS'), visitor)
-    # code = code + generate_abs(visitor.label_provider) + f'INC\nSTORE {counter_reg}\n'
-
     code = code + generate_code_for_loading_value(loop.end, visitor) + \
         f'STORE {end_reg} # {end_variable}\n'
     visitor.generated_code.append(code)
     # now iterator and end variables are computed and are resistant to start/end variables modification inside the loop
 
-    comparison_signs = {False: 'LEQ', True: 'GEQ'}
+    comparison_operations = {False: 'JPOS', True: 'JNEG'}
 
-    while_do = WhileDoCommand(
-        TwoValueCondition(
-            IdentifierValue(VariableIdentifier(iterator_variable)),
-            IdentifierValue(VariableIdentifier(end_variable)),
-            comparison_signs[loop.is_down_to]),
-        Commands(loop.commands.commands + [IncrementDecrementCommand(
-            VariableIdentifier(iterator_variable),
-            is_decrement=loop.is_down_to)]),
-        is_user_command=False)
+    # comparison_signs = {False: 'LEQ', True: 'GEQ'}
+    # old for loop implementation
+    # while_do = WhileDoCommand(
+    #     TwoValueCondition(
+    #         IdentifierValue(VariableIdentifier(iterator_variable)),
+    #         IdentifierValue(VariableIdentifier(end_variable)),
+    #         comparison_signs[loop.is_down_to]),
+    #     Commands(loop.commands.commands + [IncrementDecrementCommand(
+    #         VariableIdentifier(iterator_variable),
+    #         is_decrement=loop.is_down_to)]),
+    #     is_user_command=False)
 
-    while_do.accept(visitor)
+    label_start = visitor.label_provider.get_label()
+    label_end = visitor.label_provider.get_label()
+
+    loop_code_part_1 = [
+        f'{label_start}',
+        f'LOAD {iterator_reg}',
+        f'SUB {end_reg}',
+        f'{comparison_operations[loop.is_down_to]} {label_end}',
+    ]
+
+    visitor.generated_code.append('\n'.join(loop_code_part_1) + '\n')
+    loop.commands.accept(visitor)
+    IncrementDecrementCommand(VariableIdentifier(iterator_variable), is_decrement=loop.is_down_to).accept(visitor)
+
+    loop_code_part_2 = [
+        f'JUMP {label_start}',
+        f'{label_end}',
+    ]
+    visitor.generated_code.append('\n'.join(loop_code_part_2) + '\n')
+
+    # while_do.accept(visitor)
     code = f'## END loop: {loop_name}\n'
     visitor.generated_code.append(code)
 
