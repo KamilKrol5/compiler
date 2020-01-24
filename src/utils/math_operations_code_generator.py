@@ -631,10 +631,9 @@ class MathOperationsCodeGenerator:
         label_right_positive_left_negative = self.visitor.label_provider.get_label()
         label_right_negative_left_negative = self.visitor.label_provider.get_label()
         label_return_zero = self.visitor.label_provider.get_label()
-        label_return_zero_1 = self.visitor.label_provider.get_label()
         labels_return = list(map(lambda x: self.visitor.label_provider.get_label(), range(7)))
         labels_return_minus_one_or_zero_for_mod = list(map(lambda x: self.visitor.label_provider.get_label(), range(2)))
-        labels_return_one_or_zero_for_mod = list(map(lambda x: self.visitor.label_provider.get_label(), range(2)))
+        # labels_return_one_or_zero_for_mod = list(map(lambda x: self.visitor.label_provider.get_label(), range(2)))
 
         def code_computing_number_of_iterations() -> str:
             return '\n'.join([
@@ -642,7 +641,6 @@ class MathOperationsCodeGenerator:
                 f'STORE {log_right}',
                 self.generate_code_for_log(left, quotient, remainder),
                 f'SUB {log_right}',
-                f'JNEG {label_return_zero_1}',
                 f'STORE {log_right}',
                 f'INC',
                 f'STORE {iterations}',
@@ -712,7 +710,6 @@ class MathOperationsCodeGenerator:
             code_start_algorithm(),
             code_for_return('L_POSITIVE_R_POSITIVE_REMAINDER') if return_remainder
             else code_for_return('L_POSITIVE_R_POSITIVE_QUOTIENT'),
-            # f'SHIFT {minus_one}',
             f'JUMP {labels_return[1]}',
         ]
 
@@ -758,7 +755,6 @@ class MathOperationsCodeGenerator:
         ]
 
         code_return_zero = [
-            f'{label_return_zero_1}',
             f'{label_return_zero}',
             f'SUB 0',
             f'JUMP {labels_return[0]}',
