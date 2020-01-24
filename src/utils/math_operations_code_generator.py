@@ -104,11 +104,13 @@ class MathOperationsCodeGenerator:
     # Registers used: 0-?, 10-23
     def _generate_code_for_division(self, expression: ExpressionHavingTwoValues) -> str:
         # return self._generate_code_for_division_or_modulo(expression, is_modulo=False)
-        return self._generate_code_for_restoring_division(expression)
+        # return self._generate_code_for_restoring_division(expression)
+        return self.generate_code_for_division_with_remainder(expression)
 
     # Registers used: 0-?, 10-23
     def _generate_code_for_modulo(self, expression: ExpressionHavingTwoValues) -> str:
-        return self._generate_code_for_division_or_modulo(expression, is_modulo=True)
+        # return self._generate_code_for_division_or_modulo(expression, is_modulo=True)
+        return self.generate_code_for_division_with_remainder(expression, return_remainder=True)
 
     # Registers used: 0-?, 10-23
     def _generate_code_for_division_or_modulo(self, expression: ExpressionHavingTwoValues, is_modulo: bool) -> str:
@@ -562,6 +564,243 @@ class MathOperationsCodeGenerator:
             generate_abs(self.visitor.label_provider),
             self.generate_code_for_log(0, help_reg_1, help_reg_2),
         ]) + '\n'
+
+    def generate_code_for_division_with_remainder(self, expr: ExpressionHavingTwoValues, return_remainder=False) -> str:
+        if isinstance(expr.valueLeft, IntNumberValue) and isinstance(expr.valueRight, IntNumberValue):
+            if expr.valueRight.value != 0:
+                if return_remainder:
+                    return generate_number(
+                        expr.valueLeft.value % expr.valueRight.value, self.visitor.constants, 0)
+                else:
+                    return generate_number(
+                        expr.valueLeft.value // expr.valueRight.value, self.visitor.constants, 0)
+            else:
+                return generate_number(0, self.visitor.constants)
+
+        left = 10
+        right = 11
+        quotient = 12
+        remainder = 13
+        iterations = 14
+        log_right = 15
+
+        # we return left since remainder value is not updated and there is no need to do so, value we want is stored
+        # in left register
+        def code_for_return(mode: str) -> str:
+            labels_remainder_zero: List[str] = list(map(lambda x: self.visitor.label_provider.get_label(), range(5)))
+            return {
+                'L_POSITIVE_R_POSITIVE_REMAINDER': f'LOAD {left}',
+                'L_POSITIVE_R_NEGATIVE_REMAINDER': '\n'.join([
+                    f'LOAD {left}',
+                    f'JZERO {labels_remainder_zero[1]}',
+                    f'SUB {right}',
+                    f'{labels_remainder_zero[1]}',
+                ]),
+                'L_NEGATIVE_R_POSITIVE_REMAINDER': '\n'.join([
+                    f'LOAD {left}',
+                    f'JZERO {labels_remainder_zero[2]}',
+                    f'LOAD {right}',
+                    f'SUB {left}',
+                    f'{labels_remainder_zero[2]}'
+                ]),
+                'L_NEGATIVE_R_NEGATIVE_REMAINDER': '\n'.join([
+                    f'LOAD {left}',
+                    f'JZERO {labels_remainder_zero[0]}',
+                    negate_number(),
+                    f'{labels_remainder_zero[0]}',
+                ]),
+                'L_POSITIVE_R_POSITIVE_QUOTIENT': f'LOAD {quotient}',
+                'L_R_DIFFERENT_SIGN_QUOTIENT': '\n'.join([
+                    f'LOAD {left}',
+                    f'JZERO {labels_remainder_zero[3]}',
+                    f'LOAD {quotient}',
+                    f'INC',
+                    f'JUMP {labels_remainder_zero[4]}',
+                    f'{labels_remainder_zero[3]}',
+                    f'LOAD {quotient}',
+                    f'{labels_remainder_zero[4]}',
+                    negate_number(),
+                ]),
+                'L_NEGATIVE_R_NEGATIVE_QUOTIENT': f'LOAD {quotient}',
+                }[mode]
+
+        minus_one = self.visitor.declared_variables[self.MINUS_ONE_VAR_NAME]
+        one = self.visitor.declared_variables[self.ONE_VAR_NAME]
+
+        label_right_negative_left_positive = self.visitor.label_provider.get_label()
+        label_right_positive_left_negative = self.visitor.label_provider.get_label()
+        label_right_negative_left_negative = self.visitor.label_provider.get_label()
+        label_return_zero = self.visitor.label_provider.get_label()
+        label_return_zero_1 = self.visitor.label_provider.get_label()
+        labels_return = list(map(lambda x: self.visitor.label_provider.get_label(), range(7)))
+        labels_return_minus_one_or_zero_for_mod = list(map(lambda x: self.visitor.label_provider.get_label(), range(2)))
+        labels_return_one_or_zero_for_mod = list(map(lambda x: self.visitor.label_provider.get_label(), range(2)))
+
+        def code_computing_number_of_iterations() -> str:
+            return '\n'.join([
+                self.generate_code_for_log(right, quotient, remainder),
+                f'STORE {log_right}',
+                self.generate_code_for_log(left, quotient, remainder),
+                f'SUB {log_right}',
+                f'JNEG {label_return_zero_1}',
+                f'STORE {log_right}',
+                f'INC',
+                f'STORE {iterations}',
+            ])
+
+        def code_start_algorithm() -> str:
+            label_right_bigger = self.visitor.label_provider.get_label()
+            start_loop_label_1 = self.visitor.label_provider.get_label()
+            start_loop_label_2 = self.visitor.label_provider.get_label()
+            end_loop_label = self.visitor.label_provider.get_label()
+            return '\n'.join([
+                code_computing_number_of_iterations(),
+                # initialize quotient
+                f'SUB 0',
+                f'STORE {quotient}',
+
+                f'LOAD {right}',
+                f'SHIFT {log_right}',
+                f'STORE {remainder}',
+
+                f'{start_loop_label_1}',
+                f'{start_loop_label_2}',
+                f'LOAD {iterations}',
+                f'DEC',
+                f'JNEG {end_loop_label}',
+                f'STORE {iterations}',
+                f'LOAD {left}',
+                f'SUB {remainder}',
+                f'JNEG {label_right_bigger}',
+                f'STORE {left}',
+                f'LOAD {quotient}',
+                f'SHIFT {one}',
+                f'INC',
+                f'STORE {quotient}',
+
+                f'LOAD {remainder}',
+                f'SHIFT {minus_one}',
+                f'STORE {remainder}',
+
+                f'JUMP {start_loop_label_1}',
+
+                f'{label_right_bigger}',
+                f'LOAD {quotient}',
+                f'SHIFT {one}',
+                f'STORE {quotient}',
+
+                f'LOAD {remainder}',
+                f'SHIFT {minus_one}',
+                f'STORE {remainder}',
+
+                f'JUMP {start_loop_label_2}',
+                f'{end_loop_label}',
+            ])
+
+        code_loading_data_and_both_positive = [
+            generate_code_for_loading_value(expr.valueRight, self.visitor),
+            f'JZERO {label_return_zero}',
+            f'JNEG {label_right_negative_left_positive}',
+            f'STORE {right}',
+            generate_code_for_loading_value(expr.valueLeft, self.visitor),
+            f'JNEG {label_right_positive_left_negative}',
+            f'STORE {left}',
+            # f'SUB {right}',
+            # f'JZERO {labels_return_one_or_zero_for_mod[0]}',
+
+
+            code_start_algorithm(),
+            code_for_return('L_POSITIVE_R_POSITIVE_REMAINDER') if return_remainder
+            else code_for_return('L_POSITIVE_R_POSITIVE_QUOTIENT'),
+            # f'SHIFT {minus_one}',
+            f'JUMP {labels_return[1]}',
+        ]
+
+        code_right_positive_left_negative = [
+            f'{label_right_positive_left_negative}',
+            negate_number(),
+            f'STORE {left}',
+            # f'SUB {right}',
+            # f'JZERO {labels_return_minus_one_or_zero_for_mod[1]}',
+            code_start_algorithm(),
+
+            code_for_return('L_NEGATIVE_R_POSITIVE_REMAINDER') if return_remainder
+            else code_for_return('L_R_DIFFERENT_SIGN_QUOTIENT'),
+            f'JUMP {labels_return[2]}',
+        ]
+
+        code_right_negative_left_positive = [
+            f'{label_right_negative_left_positive}',
+            negate_number(),
+            f'STORE {right}',
+            generate_code_for_loading_value(expr.valueLeft, self.visitor),
+            f'JNEG {label_right_negative_left_negative}',
+            f'STORE {left}',
+            # f'SUB {right}',
+            # f'JZERO {labels_return_minus_one_or_zero_for_mod[0]}',
+            code_start_algorithm(),
+
+            code_for_return('L_POSITIVE_R_NEGATIVE_REMAINDER') if return_remainder
+            else code_for_return('L_R_DIFFERENT_SIGN_QUOTIENT'),
+            f'JUMP {labels_return[3]}',
+        ]
+        code_right_negative_left_negative = [
+            f'{label_right_negative_left_negative}',
+            negate_number(),
+            f'STORE {left}',
+            # f'SUB {right}',
+            # f'JZERO {labels_return_one_or_zero_for_mod[1]}',
+            code_start_algorithm(),
+
+            code_for_return('L_NEGATIVE_R_NEGATIVE_REMAINDER') if return_remainder
+            else code_for_return('L_NEGATIVE_R_NEGATIVE_QUOTIENT'),
+            f'JUMP {labels_return[4]}',
+        ]
+
+        code_return_zero = [
+            f'{label_return_zero_1}',
+            f'{label_return_zero}',
+            f'SUB 0',
+            f'JUMP {labels_return[0]}',
+        ]
+
+        # return_action = f'LOAD {minus_one}' if not return_remainder else f'SUB 0'
+        # code_return_minus_one_or_zero_for_mod = [
+        #     f'{labels_return_minus_one_or_zero_for_mod[0]}',
+        #     f'{labels_return_minus_one_or_zero_for_mod[1]}',
+        #     return_action,
+        #     f'JUMP {labels_return[5]}',
+        # ]
+        #
+        # return_action = f'LOAD {one}' if not return_remainder else f'SUB 0'
+        # code_return_one_or_zero_for_mod = [
+        #     f'{labels_return_one_or_zero_for_mod[0]}',
+        #     f'{labels_return_one_or_zero_for_mod[1]}',
+        #     return_action,
+        #     f'JUMP {labels_return[6]}',
+        #
+        # ]
+
+        code_return_section = [
+            f'{labels_return[0]}',
+            f'{labels_return[1]}',
+            f'{labels_return[2]}',
+            f'{labels_return[3]}',
+            f'{labels_return[4]}',
+            # f'{labels_return[5]}',
+            # f'{labels_return[6]}',
+        ]
+
+        return '\n'.join([
+                '\n'.join(code_loading_data_and_both_positive),
+                '\n'.join(code_right_positive_left_negative),
+                '\n'.join(code_right_negative_left_positive),
+                '\n'.join(code_right_negative_left_negative),
+                '\n'.join(code_return_zero),
+                # '\n'.join(code_return_minus_one_or_zero_for_mod),
+                # '\n'.join(code_return_one_or_zero_for_mod),
+                '\n'.join(code_return_section),
+                ]) + '\n'
 
     expressions: Dict[str, Callable] = {
         'PLUS': _generate_code_for_addition,
