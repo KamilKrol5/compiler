@@ -653,7 +653,7 @@ def test_modulo_big_numbers() -> str:
     return code
 
 
-@expected(0, 3, -4, 4, -3, 0, 0, 0, 0, 3, -2, 2, -3, 16, -12, 12, -16, 0, 0)
+@expected(0, 3, -4, 4, -3, 0, 0, 0, 0, 3, -2, 2, -3, 16, -12, 12, -16, 0, 0, 28, -72, 72, -28)
 def test_modulo_variables() -> str:
     code: str = generate_code_for_expression(
         ExpressionHavingTwoValues(
@@ -785,6 +785,34 @@ def test_modulo_variables() -> str:
         ExpressionHavingTwoValues(
             IdentifierValue(VariableIdentifier('tw_eight')),
             IdentifierValue(VariableIdentifier('seven')),
+            'MOD'
+        ), visitor=interpreter
+    ) + 'PUT\n'
+    code = code + generate_code_for_expression(
+        ExpressionHavingTwoValues(
+            IdentifierValue(VariableIdentifier('tw_eight')),
+            IdentifierValue(VariableIdentifier('hundred')),
+            'MOD'
+        ), visitor=interpreter
+    ) + 'PUT\n'
+    code = code + generate_code_for_expression(
+        ExpressionHavingTwoValues(
+            IdentifierValue(VariableIdentifier('tw_eight')),
+            IdentifierValue(VariableIdentifier('m_hundred')),
+            'MOD'
+        ), visitor=interpreter
+    ) + 'PUT\n'
+    code = code + generate_code_for_expression(
+        ExpressionHavingTwoValues(
+            IdentifierValue(VariableIdentifier('m_tw_eight')),
+            IdentifierValue(VariableIdentifier('hundred')),
+            'MOD'
+        ), visitor=interpreter
+    ) + 'PUT\n'
+    code = code + generate_code_for_expression(
+        ExpressionHavingTwoValues(
+            IdentifierValue(VariableIdentifier('m_tw_eight')),
+            IdentifierValue(VariableIdentifier('m_hundred')),
             'MOD'
         ), visitor=interpreter
     ) + 'PUT\n'
