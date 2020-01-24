@@ -9,7 +9,7 @@ from utils.test_utils import expected, get_numbers_from_run_code, flatten
 
 decl_vars = {"c": 32, "d": 64, "e": 123, "f": 120, "g": 121, 'm_seven': 54, 'seven': 53, 'tw_four': 51, 'm_tw_four': 50,
              "one": 55, "zero": 56, "m_one": 57, "big_1": 58, "big_2": 59, "five": 60, "tw_eight": 61, 'hundred': 62,
-             "m_five": 63, "m_tw_eight": 64, 'm_hundred': 65}
+             "m_five": 63, "m_tw_eight": 66, 'm_hundred': 65}
 decl_arrays = {
     'arr': (120, 135, ArrayDeclaration('arr', IntNumberValue(-20), IntNumberValue(15))),
     'brr': (256, 266, ArrayDeclaration('brr', IntNumberValue(-5), IntNumberValue(5)))}
@@ -35,6 +35,8 @@ def init() -> str:
     code = code + generate_code_for_expression(expr1, interpreter) + f'STORE {decl_vars["g"]}\n'  # g = 10
     code = code + generate_numbers({
         24: decl_vars['tw_four'],
+        248974361532: decl_vars['big_1'],
+        -879461521222224: decl_vars['big_2'],
         -24: decl_vars['m_tw_four'],
         -7: decl_vars['m_seven'],
         7: decl_vars['seven'],
@@ -316,7 +318,7 @@ def test_divide_big_numbers() -> str:
     return code
 
 
-@expected(7, 0, 0, 2, 5, 0, 3, -4, -4, 3)
+@expected(7, 0, 0, 2, 5, 0, 3, -4, -4, 3, 4, -37)
 def test_divide_number_values() -> str:
     code: str = generate_code_for_expression(
         ExpressionHavingTwoValues(
@@ -388,10 +390,24 @@ def test_divide_number_values() -> str:
             'DIV'
         ), visitor=interpreter
     ) + 'PUT\n'
+    code = code + generate_code_for_expression(
+        ExpressionHavingTwoValues(
+            IntNumberValue(-894),
+            IntNumberValue(-215),
+            'DIV'
+        ), visitor=interpreter
+    ) + 'PUT\n'
+    code = code + generate_code_for_expression(
+        ExpressionHavingTwoValues(
+            IntNumberValue(7894),
+            IntNumberValue(-215),
+            'DIV'
+        ), visitor=interpreter
+    ) + 'PUT\n'
     return code
 
 
-@expected(2, 0, 3, -4, -4, 3, 0, 0, 0, 4, 0, 0, 0, 0, 5, 5, 20, 14)
+@expected(2, 0, 3, -4, -4, 3, 0, 0, 0, 4, 0, -1, -1, 0, 5, 5, -6, -6, 5, 20, -20, -20, 20, 14, -1, -1, -4)
 def test_divide_variables() -> str:
     code: str = generate_code_for_expression(
         ExpressionHavingTwoValues(
@@ -479,8 +495,8 @@ def test_divide_variables() -> str:
     ) + 'PUT\n'
     code = code + generate_code_for_expression(
         ExpressionHavingTwoValues(
-            IdentifierValue(VariableIdentifier('five')),
-            IdentifierValue(VariableIdentifier('m_seven')),
+            IdentifierValue(VariableIdentifier('m_five')),
+            IdentifierValue(VariableIdentifier('seven')),
             'DIV'
         ), visitor=interpreter
     ) + 'PUT\n'
@@ -507,6 +523,27 @@ def test_divide_variables() -> str:
     ) + 'PUT\n'
     code = code + generate_code_for_expression(
         ExpressionHavingTwoValues(
+            IdentifierValue(VariableIdentifier('tw_eight')),
+            IdentifierValue(VariableIdentifier('m_five')),
+            'DIV'
+        ), visitor=interpreter
+    ) + 'PUT\n'
+    code = code + generate_code_for_expression(
+        ExpressionHavingTwoValues(
+            IdentifierValue(VariableIdentifier('m_tw_eight')),
+            IdentifierValue(VariableIdentifier('five')),
+            'DIV'
+        ), visitor=interpreter
+    ) + 'PUT\n'
+    code = code + generate_code_for_expression(
+        ExpressionHavingTwoValues(
+            IdentifierValue(VariableIdentifier('m_tw_eight')),
+            IdentifierValue(VariableIdentifier('m_five')),
+            'DIV'
+        ), visitor=interpreter
+    ) + 'PUT\n'
+    code = code + generate_code_for_expression(
+        ExpressionHavingTwoValues(
             IdentifierValue(VariableIdentifier('hundred')),
             IdentifierValue(VariableIdentifier('five')),
             'DIV'
@@ -515,7 +552,49 @@ def test_divide_variables() -> str:
     code = code + generate_code_for_expression(
         ExpressionHavingTwoValues(
             IdentifierValue(VariableIdentifier('hundred')),
+            IdentifierValue(VariableIdentifier('m_five')),
+            'DIV'
+        ), visitor=interpreter
+    ) + 'PUT\n'
+    code = code + generate_code_for_expression(
+        ExpressionHavingTwoValues(
+            IdentifierValue(VariableIdentifier('m_hundred')),
+            IdentifierValue(VariableIdentifier('five')),
+            'DIV'
+        ), visitor=interpreter
+    ) + 'PUT\n'
+    code = code + generate_code_for_expression(
+        ExpressionHavingTwoValues(
+            IdentifierValue(VariableIdentifier('m_hundred')),
+            IdentifierValue(VariableIdentifier('m_five')),
+            'DIV'
+        ), visitor=interpreter
+    ) + 'PUT\n'
+    code = code + generate_code_for_expression(
+        ExpressionHavingTwoValues(
+            IdentifierValue(VariableIdentifier('hundred')),
             IdentifierValue(VariableIdentifier('seven')),
+            'DIV'
+        ), visitor=interpreter
+    ) + 'PUT\n'
+    code = code + generate_code_for_expression(
+        ExpressionHavingTwoValues(
+            IdentifierValue(VariableIdentifier('hundred')),
+            IdentifierValue(VariableIdentifier('m_hundred')),
+            'DIV'
+        ), visitor=interpreter
+    ) + 'PUT\n'
+    code = code + generate_code_for_expression(
+        ExpressionHavingTwoValues(
+            IdentifierValue(VariableIdentifier('m_hundred')),
+            IdentifierValue(VariableIdentifier('hundred')),
+            'DIV'
+        ), visitor=interpreter
+    ) + 'PUT\n'
+    code = code + generate_code_for_expression(
+        ExpressionHavingTwoValues(
+            IdentifierValue(VariableIdentifier('tw_eight')),
+            IdentifierValue(VariableIdentifier('m_seven')),
             'DIV'
         ), visitor=interpreter
     ) + 'PUT\n'
@@ -574,7 +653,7 @@ def test_modulo_big_numbers() -> str:
     return code
 
 
-@expected(0, 3, -4, 4, -3, 0, 0, 0, 0)
+@expected(0, 3, -4, 4, -3, 0, 0, 0, 0, 3, -2, 2, -3, 16, -12, 12, -16, 0, 0)
 def test_modulo_variables() -> str:
     code: str = generate_code_for_expression(
         ExpressionHavingTwoValues(
@@ -639,10 +718,80 @@ def test_modulo_variables() -> str:
             'MOD'
         ), visitor=interpreter
     ) + 'PUT\n'
+    code = code + generate_code_for_expression(
+        ExpressionHavingTwoValues(
+            IdentifierValue(VariableIdentifier('tw_eight')),
+            IdentifierValue(VariableIdentifier('five')),
+            'MOD'
+        ), visitor=interpreter
+    ) + 'PUT\n'
+    code = code + generate_code_for_expression(
+        ExpressionHavingTwoValues(
+            IdentifierValue(VariableIdentifier('tw_eight')),
+            IdentifierValue(VariableIdentifier('m_five')),
+            'MOD'
+        ), visitor=interpreter
+    ) + 'PUT\n'
+    code = code + generate_code_for_expression(
+        ExpressionHavingTwoValues(
+            IdentifierValue(VariableIdentifier('m_tw_eight')),
+            IdentifierValue(VariableIdentifier('five')),
+            'MOD'
+        ), visitor=interpreter
+    ) + 'PUT\n'
+    code = code + generate_code_for_expression(
+        ExpressionHavingTwoValues(
+            IdentifierValue(VariableIdentifier('m_tw_eight')),
+            IdentifierValue(VariableIdentifier('m_five')),
+            'MOD'
+        ), visitor=interpreter
+    ) + 'PUT\n'
+    code = code + generate_code_for_expression(
+        ExpressionHavingTwoValues(
+            IdentifierValue(VariableIdentifier('hundred')),
+            IdentifierValue(VariableIdentifier('tw_eight')),
+            'MOD'
+        ), visitor=interpreter
+    ) + 'PUT\n'
+    code = code + generate_code_for_expression(
+        ExpressionHavingTwoValues(
+            IdentifierValue(VariableIdentifier('hundred')),
+            IdentifierValue(VariableIdentifier('m_tw_eight')),
+            'MOD'
+        ), visitor=interpreter
+    ) + 'PUT\n'
+    code = code + generate_code_for_expression(
+        ExpressionHavingTwoValues(
+            IdentifierValue(VariableIdentifier('m_hundred')),
+            IdentifierValue(VariableIdentifier('tw_eight')),
+            'MOD'
+        ), visitor=interpreter
+    ) + 'PUT\n'
+    code = code + generate_code_for_expression(
+        ExpressionHavingTwoValues(
+            IdentifierValue(VariableIdentifier('m_hundred')),
+            IdentifierValue(VariableIdentifier('m_tw_eight')),
+            'MOD'
+        ), visitor=interpreter
+    ) + 'PUT\n'
+    code = code + generate_code_for_expression(
+        ExpressionHavingTwoValues(
+            IdentifierValue(VariableIdentifier('tw_eight')),
+            IdentifierValue(VariableIdentifier('m_seven')),
+            'MOD'
+        ), visitor=interpreter
+    ) + 'PUT\n'
+    code = code + generate_code_for_expression(
+        ExpressionHavingTwoValues(
+            IdentifierValue(VariableIdentifier('tw_eight')),
+            IdentifierValue(VariableIdentifier('seven')),
+            'MOD'
+        ), visitor=interpreter
+    ) + 'PUT\n'
     return code
 
 
-@expected(6, 7, 5, 0, 0, 0, 3, -4, 4, -3)
+@expected(6, 7, 5, 0, 0, 0, 3, -4, 4, -3, -61)
 def test_modulo_number_values() -> str:
     code: str = generate_code_for_expression(
         ExpressionHavingTwoValues(
@@ -714,6 +863,13 @@ def test_modulo_number_values() -> str:
             'MOD'
         ), visitor=interpreter
     ) + 'PUT\n'
+    code = code + generate_code_for_expression(
+        ExpressionHavingTwoValues(
+            IntNumberValue(7894),
+            IntNumberValue(-215),
+            'MOD'
+        ), visitor=interpreter
+    ) + 'PUT\n'
     return code
 
 
@@ -737,16 +893,16 @@ def test_generate_number() -> str:
 if __name__ == '__main__':
     tests = [
         init,
-        # test_single_val_expr, test_add, test_sub, test_mul, test_taking_ith_bit, test_abs,
-        # test_divide_big_numbers,
+        test_single_val_expr, test_add, test_sub, test_mul, test_taking_ith_bit, test_abs,
+        test_divide_big_numbers,
         test_divide_number_values,
         test_divide_variables,
         test_divide_ones,
-        # test_log,
-        # test_modulo_big_numbers,
-        # test_modulo_number_values,
-        # test_modulo_variables,
-        # test_generate_number
+        test_log,
+        test_modulo_big_numbers,
+        test_modulo_number_values,
+        test_modulo_variables,
+        test_generate_number
     ]
 
     interpreter.generated_code.append(generate_number(555, destination_register=32) +
