@@ -6,6 +6,7 @@ from lexer import CompilerLexer
 from structures.ast.AST import *
 from utils.AST_interpreter import ASTInterpreter
 from utils.compilation_exceptions import CompilationException
+from utils.test_utils import run_code
 
 
 class CompilerParser(Parser):
@@ -174,8 +175,17 @@ if __name__ == '__main__':
             code: str = result.accept(visitor=interpreter)
             print("File compiled successfully to intermediate representation.")
             print(f"Replacing labels and generating executable code to {out_file}.")
-            convert_labels_to_registers(code, output_filename=out_file)
+
+            if len(sys.argv) >= 3 and sys.argv[2] == '--run':
+                print('RUNNING CODE')
+                out = run_code(code, f'exe_{src_file}', *sys.argv[3:],
+                               path_to_vm='../../maszyna_wirtualna/maszyna-wirtualna-cln')
+                print(out)
+            else:
+                convert_labels_to_registers(code, output_filename=out_file)
+
             print(f"Compilation finished successfully.")
+
         except CompilationException as e:
             print(f'A compilation error has occurred in line {e.occurrence_place[0]}. {e}')
 
