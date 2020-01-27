@@ -1,14 +1,11 @@
 import sys
 
 from sly import Parser
-
 from label_converter.label_converter import convert_labels_to_registers
 from lexer import CompilerLexer
 from structures.ast.AST import *
 from utils.AST_interpreter import ASTInterpreter
 from utils.compilation_exceptions import CompilationException
-from utils.test_utils import run_code
-from utils.utils import write_to_file
 
 
 class CompilerParser(Parser):
@@ -145,9 +142,9 @@ class CompilerParser(Parser):
     def error(self, token):
         if token:
             sys.stderr.write(f"Unrecognized symbol(s): '{token.value}'. Line number: {token.lineno} ({token.index}).\n"
-                             f"ERROR for token: {token}.")
+                             f"ERROR for token: {token}.\n")
         else:
-            sys.stderr.write("Parse error has occurred.")
+            sys.stderr.write("Parse error has occurred.\n")
         sys.exit(0)
 
 
@@ -155,9 +152,14 @@ if __name__ == '__main__':
     lexer = CompilerLexer()
     parser = CompilerParser()
 
-    src_file = 'test_programs/test3.imp'
-    if len(sys.argv) >= 2:
+    # src_file = 'test_programs/test3.imp'
+    # out_file = 'test_programs/test3.out'
+    if len(sys.argv) >= 3:
         src_file = sys.argv[1]
+        out_file = sys.argv[2]
+    else:
+        print("Correct arguments for the program are: <source filename> <executable filename>.")
+        sys.exit(0)
 
     with open(src_file, 'r') as file:
         data = file.read()
@@ -169,16 +171,11 @@ if __name__ == '__main__':
         try:
             print(f"Compiling file {src_file}.")
             interpreter = ASTInterpreter(result)
-            code = result.accept(visitor=interpreter)
-
-            if len(sys.argv) >= 3 and sys.argv[2] == '--run':
-                print('RUNNING CODE')
-                out = run_code(code, f'{src_file}.intermediate', f'exe_{src_file}', *sys.argv[3:],
-                               path_to_vm='../../maszyna_wirtualna/maszyna-wirtualna-cln')
-                print(out)
-            else:
-                write_to_file(f"{src_file}.out", code)
-                convert_labels_to_registers(f"{src_file}.out")
+            code: str = result.accept(visitor=interpreter)
+            print("File compiled successfully to intermediate representation.")
+            print(f"Replacing labels and generating executable code to {out_file}.")
+            convert_labels_to_registers(code, output_filename=out_file)
+            print(f"Compilation finished successfully.")
         except CompilationException as e:
             print(f'A compilation error has occurred in line {e.occurrence_place[0]}. {e}')
 
