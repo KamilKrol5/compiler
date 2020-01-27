@@ -13,7 +13,7 @@ from utils.utils import write_to_file
 
 class CompilerParser(Parser):
     tokens = CompilerLexer.tokens
-    debugfile = 'parser.out'
+    # debugfile = 'parser.out'
 
     @_('DECLARE declarations BEGIN commands END')
     def program(self, p) -> Program:
@@ -143,7 +143,12 @@ class CompilerParser(Parser):
             start_position=(p.lineno, p.index))
 
     def error(self, token):
-        print(f"ERROR for token: {token}\n", token.lineno, token.index)
+        if token:
+            sys.stderr.write(f"Unrecognized symbol(s): '{token.value}'. Line number: {token.lineno} ({token.index}).\n"
+                             f"ERROR for token: {token}.")
+        else:
+            sys.stderr.write("Parse error has occurred.")
+        sys.exit(0)
 
 
 if __name__ == '__main__':
@@ -162,7 +167,7 @@ if __name__ == '__main__':
         result: Program = parser.parse(tokens)
         # print(result)
         try:
-            print(f"Compiling {src_file}.")
+            print(f"Compiling file {src_file}.")
             interpreter = ASTInterpreter(result)
             code = result.accept(visitor=interpreter)
 
