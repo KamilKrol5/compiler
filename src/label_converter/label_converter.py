@@ -9,6 +9,7 @@ def convert_labels_to_registers(intermediate_code_with_labels: str, output_filen
     labels_dest = dict()
     labels_to_replace = dict()
 
+    intermediate_code_with_labels = intermediate_code_with_labels + 'HALT\n'
     if save_intermediate_code:
         write_to_file(output_filename + '.intermediate', intermediate_code_with_labels)
     lines = intermediate_code_with_labels.splitlines(keepends=True)

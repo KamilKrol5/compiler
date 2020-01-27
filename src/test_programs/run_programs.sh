@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# It should be run from test_programs directory.
 input="readme.md"
 
 command="awk /^[^@]/' {print "'$0'"}' "${input}" | grep -o '"'```.*```'"' | grep -o '[^\`]*'"
@@ -25,4 +26,5 @@ do
         ' >> $wynik;
     fi
 done < <(echo "${to_run}")
+echo Done
 
