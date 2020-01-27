@@ -50,10 +50,6 @@ Build virtual machine (1) or virtual machine for big numbers (2):
 (1) make maszyna_wirtualna/maszyna-wirtualna
 (2) make maszyna_wirtualna/maszyna-wirtualna-cln
 ```
-or virtual machine of big numbers:
-```
-make /virtual-machine/maszyna-wirtualna-cln
-```
 Run compiler:
 ```
 python3.7 src/parser.py source_filename output_filename
