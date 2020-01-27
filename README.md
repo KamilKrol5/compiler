@@ -35,7 +35,7 @@ $ sudo apt install python3.7
 Install pip (standard package manager for Python packages) and then install SLY using pip for Python 3.7:
 ```
 $ sudo apt-get install python3-pip
-$ pip3 install sly
+$ python3.7 -m pip install sly
 ```
 If you want to use virtual machine working on big numbers, you need to install cln library:
 ```
