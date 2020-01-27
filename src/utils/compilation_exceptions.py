@@ -29,3 +29,7 @@ class AnAttemptToModifyCounterException(CompilationException):
 
 class MultipleDeclarationException(CompilationException):
     pass
+
+
+class ArrayEndSmallerThanStartException(CompilationException):
+    pass
