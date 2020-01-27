@@ -521,7 +521,8 @@ if __name__ == '__main__':
     # 50, 0, 1 (do while), 10, 11, 5, 4
 
     code_all: str = interpreter.visit_program(program1)
-    returned: List[int] = get_numbers_from_run_code(code_all, 'command_test_all.txt', 'exe_command_test_all.txt')
+    returned: List[int] = get_numbers_from_run_code(code_all, 'command_test_all.txt',
+                                                    should_save_intermediate_code=True)
 
     print('unmatched: (result number, (expected, returned))')
     pprint(list((i, (e, r)) for i, (e, r) in enumerate(zip(expected, returned)) if e != r))

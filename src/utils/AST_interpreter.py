@@ -7,14 +7,15 @@ from utils.command_utils import write_code_for_if_then_command, write_code_for_i
     write_code_for_assignment_command, write_code_for_while_do_command, write_code_for_do_while_command, \
     write_code_for_for_loop_command
 from utils.compilation_exceptions import MultipleDeclarationException, LocalVariableAlreadyDeclaredException, \
-    AnAttemptToRemoveNonExistingLocalVariable, UndeclaredArrayException, UndeclaredVariableException
+    AnAttemptToRemoveNonExistingLocalVariable, UndeclaredArrayException, UndeclaredVariableException, \
+    ArrayEndSmallerThanStartException
 from utils.expression_utils import generate_code_for_expression
 from utils.label_provider import LabelProvider
 from utils.loop_utils import generate_condition
 from utils.arrays_utils import generate_code_for_computing_index_of_array_element_by_variable, \
     compute_real_register_of_array_element
 from structures.ast.identifier_register_representation import *
-from utils.math_utils import generate_number, generate_numbers, generate_numbers_naive
+from utils.math_utils import generate_number, generate_numbers
 from utils.value_utils import generate_code_for_loading_value
 
 
@@ -74,7 +75,7 @@ class ASTInterpreter(Visitor):
 
     def _assign_registers_to_variables(self):
         # assign registers to variables
-        # TODO this can be optimized by shifting array indexes at the end
+        self.check_array_declarations()
         for declaration in self.program.declarations.declarations:
             if isinstance(declaration, NumberDeclaration):
                 if declaration.identifier in self.declared_variables:
@@ -91,13 +92,25 @@ class ASTInterpreter(Visitor):
                 real_start = self.VARIABLES_START_REGISTER + 1
                 real_end = self.VARIABLES_START_REGISTER + 1 + array_length
 
-                self.declared_variables[declaration.identifier] = real_start
+                # self.declared_variables[declaration.identifier] = real_start
                 self.declared_arrays[declaration.identifier] = (real_start, real_end, declaration)
 
                 self.VARIABLES_START_REGISTER = self.VARIABLES_START_REGISTER + array_length
 
             self.VARIABLES_START_REGISTER = self.VARIABLES_START_REGISTER + 1
-        print(f'Variables start register: {self.VARIABLES_START_REGISTER}')
+        # print(f'Variables start register: {self.VARIABLES_START_REGISTER}')
+
+    def check_array_declarations(self):
+        for declaration in self.program.declarations.declarations:
+            checking = declaration.accept(self)
+            if checking is None:
+                continue  # declaration is not an array declaration
+            elif not checking:
+                raise ArrayEndSmallerThanStartException(f"Incorrect declaration of array: '{declaration.identifier}'.\n"
+                                                        f"End index must be greater or equal than/to start index.")
+
+    def visit_array_declaration(self, array_declaration: 'ArrayDeclaration'):
+        return array_declaration.end_index.value >= array_declaration.begin_index.value
 
     ''' Generates default constants and stores them in specified registers.
         Names of the constants need to be present in declared_variables before call of this method.'''

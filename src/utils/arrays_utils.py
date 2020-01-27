@@ -1,4 +1,5 @@
 from utils.AST_interpreter import *
+from utils.compilation_exceptions import *
 from utils.math_utils import generate_number
 from typing import Dict, Tuple
 from structures.ast.AST import ArrayDeclaration, ArrayElementByIntNumberIdentifier, ArrayElementByVariableIdentifier
