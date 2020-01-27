@@ -1,5 +1,5 @@
-from utils.compilation_exceptions import *
 from utils.AST_interpreter import *
+from utils.compilation_exceptions import UndeclaredArrayException, UndeclaredVariableException
 from utils.arrays_utils import generate_code_for_loading_array_element_by_variable, \
     compute_real_register_of_array_element
 from utils.math_utils import generate_number
