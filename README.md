@@ -44,8 +44,7 @@ sudo apt-get install libcln-dev
 
 
 ### Launching the compiler
-Go to root folder (repository folder).
-
+Go to root folder (repository folder).  
 Build virtual machine (1) or virtual machine for big numbers (2):
 ```
 (1) make maszyna_wirtualna/maszyna-wirtualna
