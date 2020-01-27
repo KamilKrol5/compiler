@@ -29,17 +29,17 @@ CLN (Class Library for Numbers) is required to build virtual machine dedicated f
 Example installation of the packages on Ubuntu.  
 Update apt-get and then install python 3.7:
 ```
-sudo apt-get update
-sudo apt install python3.7
+$ sudo apt-get update
+$ sudo apt install python3.7
 ```
 Install pip (standard package manager for Python packages) and then install SLY using pip for Python 3.7:
 ```
-sudo apt-get install python3-pip
-pip3 install sly
+$ sudo apt-get install python3-pip
+$ pip3 install sly
 ```
 If you want to use virtual machine working on big numbers, you need to install cln library:
 ```
-sudo apt-get install libcln-dev
+$ sudo apt-get install libcln-dev
 ```  
 
 
@@ -47,15 +47,15 @@ sudo apt-get install libcln-dev
 Go to root folder (repository folder).  
 Build virtual machine (1) or virtual machine for big numbers (2):
 ```
-(1) make maszyna_wirtualna/maszyna-wirtualna
-(2) make maszyna_wirtualna/maszyna-wirtualna-cln
+(1) $ make maszyna_wirtualna/maszyna-wirtualna
+(2) $ make maszyna_wirtualna/maszyna-wirtualna-cln
 ```
 Run compiler:
 ```
-python3.7 src/parser.py source_filename output_filename
+$ python3.7 src/parser.py source_filename output_filename
 ```
 Use virtual machine (classic or big numbers) to run the generated code:
 ```
-./maszyna_wirtualna/maszyna-wirtualna output_filename
-./maszyna_wirtualna/maszyna-wirtualna-cln output_filename
+$ ./maszyna_wirtualna/maszyna-wirtualna output_filename
+$ ./maszyna_wirtualna/maszyna-wirtualna-cln output_filename
 ```
