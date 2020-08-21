@@ -3,7 +3,9 @@
 Project for a course titled 'Formal Languages And Translation Techniques'
 (Języki Formalne i Techniki Translacji) at the Faculty of Fundamental Problems of Technology (WPPT), 
 Wrocław University of Science and Technology (PWr). This course is for 5th semester of computer science
-studies.
+studies.  
+
+Another purpose of this project was to **learn** Python3, so there are pieces of code that could be refactored (maybe some day).
 
 ### Repository content
 The _src_ folder contains source code for the project, tests. _Examples_ folder 
