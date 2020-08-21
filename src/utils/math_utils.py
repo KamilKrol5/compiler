@@ -10,6 +10,7 @@ DIVISION = 200
 
 GENERATING_THRESHOLD = 0
 
+
 # Negates number which is in register 0 (p0)
 # Registers used: 0-1
 @registers_used(0, 1)
@@ -92,14 +93,12 @@ def generate_numbers(numbers: Dict[int, int]) -> str:
     numbers_abs.sort()
 
     previous_was_negative = False
-    p0: int = 0
     result = result + generate_number(numbers_abs[0])
     if number_signs[numbers_abs[0]][0]:
         result = result + f'STORE {numbers[numbers_abs[0]]}\n'
     if number_signs[numbers_abs[0]][1]:
         result = result + negate_number() + f'STORE {numbers[- numbers_abs[0]]}\n'
         previous_was_negative = True
-    p0 = numbers_abs[0]
 
     for i in range(1, len(numbers_abs)):
         a_i = numbers_abs[i]
@@ -131,10 +130,10 @@ def generate_numbers_naive(numbers: Dict[int, int]) -> str:
 # Registers used: 2(itself) and 0-1(sub calls)
 def add_constants(x: int, y: int) -> str:
     # Numbers do not have the same sign
-    if x >= 0 and y <= 0:
+    if x >= 0 >= y:
         x1, y1 = abs(x), abs(y)
         return generate_number(y1, destination_register=2) + generate_number(x1) + 'SUB 2'
-    elif x <= 0 and y >= 0:
+    elif x <= 0 <= y:
         x1, y1 = abs(x), abs(y)
         return generate_number(x1, destination_register=2) + generate_number(y1) + 'SUB 2'
 
@@ -153,7 +152,7 @@ def multiply_constants(x: int, y: int) -> str:
 
     y_register = 2
     x_register = 3
-    result_is_negative = (x > 0 and y < 0) or (x < 0 and y > 0)
+    result_is_negative = (x > 0 > y) or (x < 0 < y)
     x = abs(x)
     y = abs(y)
     # choose smaller number to be multiplier
@@ -203,7 +202,7 @@ def _perform_division_with_reminder(n: int, d: int, label1: str, label2: str, de
     result_register = 1
     d_register = 2
     n_register = 3
-    result_is_negative = (n > 0 and d < 0) or (n < 0 and d > 0)
+    result_is_negative = (n > 0 > d) or (n < 0 < d)
     n = abs(n)
     d = abs(d)
 
