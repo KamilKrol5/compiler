@@ -7,6 +7,7 @@ INDENT: str = '   '
 
 class ASTElement:
     start_position: Tuple[int, int] = (0, 0)
+
     @abstractmethod
     def accept(self, visitor: Visitor):
         pass
@@ -109,6 +110,7 @@ class ArrayElementByIntNumberIdentifier(Identifier):
 
     def __str__(self):
         return f'{self.array_identifier}({self.index_value.value})'
+
 
 class Declaration(ABC, ASTElement, PrintableWithIndent):
     identifier = None
@@ -264,7 +266,13 @@ class IfThenElseCommand(Command):
     def accept(self, visitor: Visitor):
         return visitor.visit_if_then_else_command(self)
 
-    def __init__(self, condition: Condition, commands_true: Commands, commands_false: Commands, start_position=(0, 0)):
+    def __init__(
+            self,
+            condition: Condition,
+            commands_true: Commands,
+            commands_false: Commands,
+            start_position=(0, 0)
+    ):
         self.start_position: Tuple[int, int] = start_position
         self.commands_true = commands_true
         self.commands_false = commands_false
@@ -339,7 +347,15 @@ class ForCommand(Command):
     def accept(self, visitor: Visitor):
         return visitor.visit_for_command(self)
 
-    def __init__(self, iterator_identifier: str, start: Value, end: Value, is_down_to: bool, commands: Commands, start_position=(0, 0)):
+    def __init__(
+            self,
+            iterator_identifier: str,
+            start: Value,
+            end: Value,
+            is_down_to: bool,
+            commands: Commands,
+            start_position=(0, 0)
+    ):
         self.start_position: Tuple[int, int] = start_position
         self.iterator_identifier = iterator_identifier
         self.start = start
@@ -401,7 +417,12 @@ class IncrementDecrementCommand(Command):
     def accept(self, visitor: Visitor):
         return visitor.visit_increment_decrement_command(self)
 
-    def __init__(self, identifier: VariableIdentifier, is_decrement=False, start_position=(0, 0)):
+    def __init__(
+            self,
+            identifier: VariableIdentifier,
+            is_decrement=False,
+            start_position=(0, 0)
+    ):
         self.start_position: Tuple[int, int] = start_position
         self.identifier = identifier
         self.is_decrement = is_decrement
