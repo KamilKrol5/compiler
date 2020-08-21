@@ -1,3 +1,4 @@
+# 
 # Compiler
 Project for a course titled 'Formal Languages And Translation Techniques'
 (Języki Formalne i Techniki Translacji) at the Faculty of Fundamental Problems of Technology (WPPT), 
@@ -55,6 +56,10 @@ $ cd ..
 Run compiler:
 ```
 $ python3.7 src/parser.py source_filename output_filename
+```
+or
+```
+$ kompilator source_filename output_filename
 ```
 Use virtual machine (classic or big numbers) to run the generated code:
 ```

@@ -1,0 +1,1 @@
+python3.7 src/parser.py $1 $2
