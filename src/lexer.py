@@ -61,18 +61,3 @@ class CompilerLexer(Lexer):
     def error(self, t):
         print(f'Illegal character in line {self.lineno}: {t.value[0]}')
         self.index += 1
-
-
-if __name__ == '__main__':
-    data = '''
-[ Counting 
-lkkjkhk]
-x ASSIGN 0; GG
-FOR 1 TO 10
-    WRITE x;
-    x ASSIGN x PLUS 1;
-
-'''
-    lexer = CompilerLexer()
-    for tok in lexer.tokenize(data):
-        print(tok)

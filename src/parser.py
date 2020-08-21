@@ -153,8 +153,6 @@ if __name__ == '__main__':
     lexer = CompilerLexer()
     parser = CompilerParser()
 
-    # src_file = 'test_programs/test3.imp'
-    # out_file = 'test_programs/test3.out'
     if len(sys.argv) >= 3:
         src_file = sys.argv[1]
         out_file = sys.argv[2]
@@ -179,7 +177,7 @@ if __name__ == '__main__':
             if len(sys.argv) >= 3 and sys.argv[2] == '--run':
                 print('RUNNING CODE')
                 out = run_code(code, f'exe_{src_file}', *sys.argv[3:],
-                               path_to_vm='../../maszyna_wirtualna/maszyna-wirtualna-cln')
+                               path_to_vm='../maszyna_wirtualna/maszyna-wirtualna-cln')
                 print(out)
             else:
                 convert_labels_to_registers(code, output_filename=out_file)

@@ -3,9 +3,11 @@ import re
 from utils.utils import write_to_file
 
 
-def convert_labels_to_registers(intermediate_code_with_labels: str, output_filename='unnamed_executable',
-                                save_intermediate_code=False):
-
+def convert_labels_to_registers(
+        intermediate_code_with_labels: str,
+        output_filename='unnamed_executable',
+        save_intermediate_code=False
+) -> None:
     labels_dest = dict()
     labels_to_replace = dict()
 
