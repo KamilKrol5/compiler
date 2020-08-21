@@ -47,7 +47,9 @@ class ASTInterpreter(Visitor):
         self.program.declarations.declarations.extend([NumberDeclaration(self.ONE_VAR_NAME),
                                                        NumberDeclaration(self.MINUS_ONE_VAR_NAME),
                                                        NumberDeclaration(self.ZERO_VAR_NAME)])
-        self.program.declarations.declarations.extend(NumberDeclaration(str(c)+self.CONSTANT_SUFFIX) for c in constants)
+        self.program.declarations.declarations.extend(
+            NumberDeclaration(str(c) + self.CONSTANT_SUFFIX) for c in constants
+        )
 
         # structures for variables
         self.declared_variables: Dict[str, int] = dict()
@@ -66,9 +68,9 @@ class ASTInterpreter(Visitor):
         self.generate_default_constants()
         self.generate_constants(constants)
         self.constants: Dict[int, int] = dict(
-            (const,
-             self.declared_variables[str(const)+self.CONSTANT_SUFFIX])
-            for const in self.constants_finder.constants_found.keys())
+            (const, self.declared_variables[str(const) + self.CONSTANT_SUFFIX])
+            for const in self.constants_finder.constants_found.keys()
+        )
         # pprint(self.constants)
         # pprint(self.declared_variables)
         # pprint(self.declared_arrays)
@@ -112,33 +114,36 @@ class ASTInterpreter(Visitor):
     def visit_array_declaration(self, array_declaration: 'ArrayDeclaration'):
         return array_declaration.end_index.value >= array_declaration.begin_index.value
 
-    ''' Generates default constants and stores them in specified registers.
-        Names of the constants need to be present in declared_variables before call of this method.'''
-
     def generate_default_constants(self):
+        """
+            Generates default constants and stores them in specified registers.
+            Names of the constants need to be present in declared_variables before call of this method.
+        """
         for const in self.default_constants:
             self.generated_code.append(
                 generate_number(const.value, {}, destination_register=self.declared_variables[const.name]))
 
     def generate_constants(self, constants: Iterable[int]):
         numbers: Dict[int, int] = \
-            dict((const, self.declared_variables[str(const)+self.CONSTANT_SUFFIX]) for const in constants)
+            dict((const, self.declared_variables[str(const) + self.CONSTANT_SUFFIX]) for const in constants)
         self.generated_code.append(generate_numbers(numbers))
 
-    ''' Returns local variable key in the declared_variables map.
-        Example: call with argument 'i' will return 'i@local'.'''
-
     def get_local_variable_name_in_declared_variables_map(self, variable_name: str) -> str:
+        """
+            Returns local variable key in the declared_variables map.
+            Example: call with argument 'i' will return 'i@local'.
+        """
         return variable_name + self.LOCAL_VAR_SUFFIX
 
-    ''' Add local variable to the interpreter. If there was the same variable already declared 
-        an LocalVariableAlreadyDeclaredException is raised. 
-        More details below - in method comments.'''
-
     def add_local_variable(self, variable_name: str, default_value=None) -> None:
+        """
+            Add local variable to the interpreter. If there was the same variable already declared
+            an LocalVariableAlreadyDeclaredException is raised.
+            More details below - in method comments.
+        """
         # An assumption: there cannot be two nested local variables named the same.
         if variable_name in self.local_variables or \
-            self.get_local_variable_name_in_declared_variables_map(variable_name) \
+                self.get_local_variable_name_in_declared_variables_map(variable_name) \
                 in self.declared_variables:
             raise LocalVariableAlreadyDeclaredException(f'Local variable with "{variable_name}" was '
                                                         f'already defined.')
@@ -186,12 +191,13 @@ class ASTInterpreter(Visitor):
             self.generated_code.append(generate_number(
                 default_value, constants=self.constants, destination_register=self.local_variables[variable_name]))
 
-    ''' Removes previously added local variable from self.local_variables and self.declared_variables.
-        local_identifier_name is variable name present in local_variables (in basic case without @local suffix).
-        Example: call with 'i' as argument will remove 'i' variable from local_variables and 'i@local' from
-        declared_variables.'''
-
     def remove_local_variable(self, local_identifier_name: str) -> None:
+        """
+            Removes previously added local variable from self.local_variables and self.declared_variables.
+            local_identifier_name is variable name present in local_variables (in basic case without @local suffix).
+            Example: call with 'i' as argument will remove 'i' variable from local_variables and 'i@local' from
+            declared_variables.
+        """
         if local_identifier_name not in self.declared_variables:
             raise AnAttemptToRemoveNonExistingLocalVariable(
                 f"An attempt to remove non existing local variable: {local_identifier_name}.")
@@ -216,22 +222,20 @@ class ASTInterpreter(Visitor):
     def visit_identifier_value(self, identifier_value: 'IdentifierValue') -> int:
         pass
 
-    ''' Returns the real register associated with given identifier '''
-
     def visit_array_element_by_variable_identifier(
             self,
             array_element_by_variable_identifier: 'ArrayElementByVariableIdentifier'
     ) -> AbstractIdentifierAccess:
+        """ Returns the real register associated with given identifier """
         return DynamicIdentifierAccess(
             generate_code_for_computing_index_of_array_element_by_variable(
                 array_element_by_variable_identifier, self))
-
-    ''' Returns the real register associated with given identifier '''
 
     def visit_array_element_by_int_number_identifier(
             self,
             array_element_by_int_number_identifier: 'ArrayElementByIntNumberIdentifier'
     ) -> AbstractIdentifierAccess:
+        """ Returns the real register associated with given identifier """
         if array_element_by_int_number_identifier.array_identifier not in self.declared_arrays:
             raise UndeclaredArrayException(
                 f"Array '{array_element_by_int_number_identifier.array_identifier}' was not declared.",
@@ -241,10 +245,9 @@ class ASTInterpreter(Visitor):
                 self.declared_arrays, array_element_by_int_number_identifier)
         )
 
-    ''' Returns the real register associated with given identifier '''
-
     def visit_variable_identifier(
             self, variable_identifier: 'VariableIdentifier') -> AbstractIdentifierAccess:
+        """ Returns the real register associated with given identifier """
         if variable_identifier.identifier_name not in self.declared_variables:
             raise UndeclaredVariableException(f"Variable '{variable_identifier.identifier_name}' was not declared.",
                                               occurrence_place=variable_identifier.start_position)
@@ -291,17 +294,19 @@ class ASTInterpreter(Visitor):
         self.generated_code.append(
             generate_code_for_write_command(write_command, self))
 
-    ''' Writes code for making JUMP to the label specified in JumpCommand.
-        Method does not check if given label has any sense or if it has corresponding label in the generated code.'''
-
     def visit_jump_command(self, jump_command: JumpCommand) -> None:
+        """
+            Writes code for making JUMP to the label specified in JumpCommand.
+            Method does not check if given label has any sense or if it has corresponding label in the generated code.
+        """
         self.generated_code.append(
             f'JUMP {jump_command.destination_label}\n')
 
-    ''' Writes code for incrementing or decrementing a variable included in increment_decrement_command argument
-        as variableIdentifier. It loads this variable, perform operation and saves result in this variable.'''
-
     def visit_increment_decrement_command(self, increment_decrement_command: IncrementDecrementCommand) -> None:
+        """
+            Writes code for incrementing or decrementing a variable included in increment_decrement_command argument
+            as variableIdentifier. It loads this variable, perform operation and saves result in this variable.
+        """
         code: str = generate_code_for_loading_value(
             IdentifierValue(increment_decrement_command.identifier), self)
         if increment_decrement_command.is_decrement:
